@@ -17,4 +17,4 @@ config :logger, level: :info
 
 config :rewardApp, RewardAppWeb.Endpoint,
 url: [scheme: "https", host: "vast-savannah-94142.herokuapp.com", port: 443],
-force_ssl: [rewrite_on: [:x_forwarded_proto]],
+force_ssl: [rewrite_on: [:x_forwarded_proto]]
