@@ -8,6 +8,7 @@ defmodule RewardAppWeb.Router do
     plug :put_root_layout, {RewardAppWeb.LayoutView, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug RewardAppWeb.Auth
   end
 
   pipeline :api do
@@ -18,6 +19,27 @@ defmodule RewardAppWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
+  end
+
+  scope "/user", RewardAppWeb do
+    pipe_through :browser
+
+    get "/", UserController, :index
+    post "/", UserController, :create
+    get "/new", UserController, :new
+    get "/:id", UserController, :show
+    get "/:id/edit", UserController, :edit
+    put "/:id", UserController, :update
+    delete "/:id", UserController, :delete
+
+  end
+
+  scope "/sessions", RewardAppWeb do
+    pipe_through :browser
+
+    get "/new", SessionController, :new
+    post "/", SessionController, :create
+    delete "/:id", SessionController, :delete
   end
 
   # Other scopes may use custom stacks.
