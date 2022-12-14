@@ -20,7 +20,7 @@ defmodule RewardApp.Accounts.User do
     |> validate_required([:name, :email])
     |> validate_format(:email, ~r/@/)
     |> validate_length(:name, min: 2)
-
+    |> unique_constraint(:email)
   end
 
   def registration_changeset(user, params) do

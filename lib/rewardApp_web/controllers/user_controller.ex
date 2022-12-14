@@ -28,15 +28,21 @@ defmodule RewardAppWeb.UserController do
   end
 
   def create(conn, %{"user" => user_params}) do
+    IO.puts("++++++")
+    IO.inspect(user_params)
+    IO.puts("++++++")
     case Accounts.register_user(user_params) do
       {:ok, user} ->
         conn
         |> RewardAppWeb.Auth.login(user)
         |> put_flash(:info, "User created successfully.")
-        |> redirect(to: Routes.user_path(conn, :show, user))
+        |> redirect(to: Routes.user_path(conn, :index))
 
-      {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, "new.html", changeset: changeset)
+      # {:error, %Ecto.Changeset{} = changeset} ->
+      {:error, changeset} ->
+        conn
+        |> put_flash(:error, "There was an error creating the user.")
+        |> render("new.html", changeset: changeset)
     end
   end
 

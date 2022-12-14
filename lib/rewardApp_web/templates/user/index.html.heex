@@ -1,31 +1,27 @@
 <h1>Listing Users</h1>
 
-<table>
-  <thead>
+<table class="table">
+  <thead class="table-primary">
     <tr>
-      <th>Name</th>
-      <th>Name</th>
-      <th>Role</th>
-      <th>Total points</th>
-
-      <th></th>
+      <th scope="col">#</th>
+      <th scope="col">Name</th>
+      <th scope="col">Send points</th>
     </tr>
   </thead>
-  <tbody>
-<%= for user <- @users do %>
-    <tr>
-      <td><%= user.name %></td>
-      <td><%= user.name %></td>
-      <td><%= user.role %></td>
-      <td><%= user.total_points %></td>
-
-      <td>
-        <span><%= link "Show", to: Routes.user_path(@conn, :show, user) %></span>
-        <span><%= link "Edit", to: Routes.user_path(@conn, :edit, user) %></span>
-        <span><%= link "Delete", to: Routes.user_path(@conn, :delete, user), method: :delete, data: [confirm: "Are you sure?"] %></span>
-      </td>
-    </tr>
-<% end %>
+  <tbody class="table-group-divider">
+  <%= for user <- @users do %>
+    <%= if user != @current_user do %>
+      <tr>
+        <td><%= user.id %></td>
+        <td><%= user.name %></td>
+        <td>
+          <span><%= link "Show", to: Routes.user_path(@conn, :show, user) %></span>
+          <span><%= link "Edit", to: Routes.user_path(@conn, :edit, user), data: [confirm: "Are you sure?"] %></span>
+          <span><%= link "Delete", to: Routes.user_path(@conn, :delete, user), method: :delete, data: [confirm: "Are you sure?"] %></span>
+        </td>
+      </tr>
+    <% end %>
+  <% end %>
   </tbody>
 </table>
 

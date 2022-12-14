@@ -11,11 +11,17 @@ defmodule RewardAppWeb.SessionController do
         conn
         |> RewardAppWeb.Auth.login(user)
         |> put_flash(:info, "Welcome back!")
-        |> redirect(to: Routes.user_path(conn, :show, user))
+        |> redirect(to: Routes.user_path(conn, :index))
       {:error, _reason} ->
         conn
         |> put_flash(:error, "Invalid email or password.")
         |> render("new.html")
     end
+  end
+
+  def delete(conn, _) do
+    conn
+    |> RewardAppWeb.Auth.logout()
+    |> redirect(to: Routes.session_path(conn, :new))
   end
 end
