@@ -2,13 +2,9 @@ import Config
 
 # Configure your database
 config :rewardApp, RewardApp.Repo,
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  database: "rewardapp_dev",
-  stacktrace: true,
-  show_sensitive_data_on_connection_error: true,
-  pool_size: 10
+  ssl: true,
+  ssl_opts: [log_level: :error],
+  hello
 
 # For development, we disable any cache and enable
 # debugging and code reloading.
