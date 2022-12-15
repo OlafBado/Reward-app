@@ -207,4 +207,10 @@ defmodule RewardApp.Accounts do
           {:error, changeset}
     end
   end
+
+  def set_points_monthly do
+    for user <- list_users() do
+      update_user_points(user, %{total_points: 50})
+    end
+  end
 end

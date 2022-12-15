@@ -1,5 +1,5 @@
 <h1 class="mb-4 mt-4">Pick a reward</h1>
-<div class="row hidden-md-up">
+<div class="row row-cols-1 row-cols-md-3 g-4">
 <%= for reward <- @rewards do %>
 <div class="col-md-4">
     <div class="card">
@@ -11,7 +11,7 @@
       <p class="card-text">
         <small class="text-muted">Price: <%=reward.price%></small>
       </p>
-      <%= link "Pick", to: Routes.user_rewards_path(@conn, :create, reward: reward.name), method: :post, class: "btn btn-primary" %>
+      <%= link "Pick", to: Routes.user_reward_path(@conn, :create, reward_id: reward.id), method: :post, class: "btn btn-primary" %>
     </div>
   </div>
 </div>

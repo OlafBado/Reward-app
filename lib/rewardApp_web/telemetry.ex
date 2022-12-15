@@ -9,6 +9,7 @@ defmodule RewardAppWeb.Telemetry do
   @impl true
   def init(_arg) do
     children = [
+      RewardApp.Tasks.UpdateDatabase,
       # Telemetry poller will execute the given period measurements
       # every 10_000ms. Learn more here: https://hexdocs.pm/telemetry_metrics
       {:telemetry_poller, measurements: periodic_measurements(), period: 10_000}

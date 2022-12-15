@@ -18,6 +18,8 @@ defmodule RewardApp.Rewards do
     Repo.all(Reward)
   end
 
+  def get_reward!(id), do: Repo.get!(Reward, id)
+
   def change_reward(%Reward{} = reward, attrs) do
     Reward.changeset(reward, attrs)
   end

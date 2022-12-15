@@ -1,0 +1,15 @@
+<h1 class="mb-4 mt-4">Recently given rewards</h1>
+
+<ul class="list-group">
+    <%= for user_reward <- @user_rewards do %>
+        <li class="list-group-item">
+            <h5 class="d-inline">
+                <%= user_reward.name %>
+            </h5>
+            picks up
+            <h5 class="d-inline">
+                <%= user_reward.reward %>
+            </h5>
+        </li>
+    <% end %>
+</ul>

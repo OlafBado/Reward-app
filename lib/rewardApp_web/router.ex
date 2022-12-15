@@ -53,13 +53,10 @@ defmodule RewardAppWeb.Router do
   scope "/user_rewards", RewardAppWeb do
     pipe_through :browser
 
-    post "/", UserRewardsController, :create
+    get "/", UserRewardController, :index
+    post "/", UserRewardController, :create
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", RewardAppWeb do
-  #   pipe_through :api
-  # end
 
   # Enables LiveDashboard only for development
   #
@@ -76,6 +73,7 @@ defmodule RewardAppWeb.Router do
 
       live_dashboard "/dashboard", metrics: RewardAppWeb.Telemetry
     end
+
   end
 
   # Enables the Swoosh mailbox preview in development.

@@ -50,7 +50,8 @@ defmodule RewardApp.MixProject do
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
       {:pbkdf2_elixir, "~> 2.0"},
-      {:dart_sass, "~> 0.5", runtime: Mix.env() == :dev}
+      {:dart_sass, "~> 0.5", runtime: Mix.env() == :dev},
+      {:phoenix_swoosh, "~> 1.0"},
     ]
   end
 
