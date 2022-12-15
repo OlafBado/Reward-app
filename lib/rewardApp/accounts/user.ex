@@ -40,4 +40,12 @@ defmodule RewardApp.Accounts.User do
         changeset
     end
   end
+
+  def user_points_changeset(user, points) do
+    user
+    |> cast(points, [:total_points])
+    |> validate_required(:total_points)
+    |> validate_number(:total_points, greater_than_or_equal_to: 0, message: "You don't have enough points!")
+  end
+
 end

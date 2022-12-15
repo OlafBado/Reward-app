@@ -4,18 +4,18 @@ defmodule RewardAppWeb.UserController do
   alias RewardApp.Accounts
   alias RewardApp.Accounts.User
 
-  plug :authenticate when action in [:index, :show, :edit, :update, :delete]
+  plug RewardAppWeb.RequireAuth when action in [:index, :show, :edit, :update, :delete, :send]
 
-  defp authenticate(conn, _opts) do
-    if conn.assigns.current_user do
-      conn
-    else
-      conn
-      |> put_flash(:error, "You must be logged in to access this page.")
-      |> redirect(to: "/")
-      |> halt()
-    end
-  end
+  # defp authenticate(conn, _opts) do
+  #   if conn.assigns.current_user do
+  #     conn
+  #   else
+  #     conn
+  #     |> put_flash(:error, "You must be logged in to access this page.")
+  #     |> redirect(to: "/")
+  #     |> halt()
+  #   end
+  # end
 
   def index(conn, _params) do
     users = Accounts.list_users()
@@ -28,9 +28,6 @@ defmodule RewardAppWeb.UserController do
   end
 
   def create(conn, %{"user" => user_params}) do
-    IO.puts("++++++")
-    IO.inspect(user_params)
-    IO.puts("++++++")
     case Accounts.register_user(user_params) do
       {:ok, user} ->
         conn
@@ -38,7 +35,6 @@ defmodule RewardAppWeb.UserController do
         |> put_flash(:info, "User created successfully.")
         |> redirect(to: Routes.user_path(conn, :index))
 
-      # {:error, %Ecto.Changeset{} = changeset} ->
       {:error, changeset} ->
         conn
         |> put_flash(:error, "There was an error creating the user.")
@@ -66,8 +62,10 @@ defmodule RewardAppWeb.UserController do
         |> put_flash(:info, "User updated successfully.")
         |> redirect(to: Routes.user_path(conn, :show, user))
 
-      {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, "edit.html", user: user, changeset: changeset)
+      {:error, _changeset} ->
+        conn
+        |> put_flash(:error, "There was an error updating the user.")
+        |> redirect(to: Routes.user_path(conn, :index))
     end
   end
 
@@ -79,4 +77,33 @@ defmodule RewardAppWeb.UserController do
     |> put_flash(:info, "User deleted successfully.")
     |> redirect(to: Routes.user_path(conn, :index))
   end
+  def send(conn, %{"id" => receiver_id, "user" => %{"points" => points}}) do
+    case Accounts.validate_points(points) do
+      {:ok, points} ->
+        case Accounts.send_points(conn.assigns.current_user, receiver_id, points) do
+          {:ok, _user} ->
+            conn
+            |> put_flash(:info, "Points sent successfully.")
+            |> redirect(to: Routes.user_path(conn, :index))
+
+          {:error, _changeset} ->
+            conn
+            |> put_flash(:error, "You do not have enough points to send.")
+            |> redirect(to: Routes.user_path(conn, :index))
+        end
+      {:error, :zero_points} ->
+        conn
+        |> put_flash(:error, "You must send at least 1 point.")
+        |> redirect(to: Routes.user_path(conn, :index))
+      {:error, :negative_points} ->
+        conn
+        |> put_flash(:error, "You cannot send negative points.")
+        |> redirect(to: Routes.user_path(conn, :index))
+      {:error, :empty_points} ->
+        conn
+        |> put_flash(:error, "You must enter a number of points to send.")
+        |> redirect(to: Routes.user_path(conn, :index))
+    end
+  end
+
 end

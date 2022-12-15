@@ -179,4 +179,32 @@ defmodule RewardApp.Accounts do
       end
   end
 
+  def update_user_points(%User{} = user, attrs) do
+    user
+    |> User.user_points_changeset(attrs)
+    |> Repo.update()
+  end
+
+  def validate_points(points) do
+    cond do
+      points == "" ->
+        {:error, :empty_points}
+      points < "0" ->
+        {:error, :negative_points}
+      points == "0" ->
+        {:error, :zero_points}
+      true ->
+        {:ok, points}
+    end
+  end
+
+  def send_points(sender, receiver_id, points) do
+      case update_user_points(sender, %{total_points: sender.total_points - String.to_integer(points)}) do
+        {:ok, _user} ->
+          update_user_points(get_user!(receiver_id), %{total_points: get_user!(receiver_id).total_points + String.to_integer(points)})
+          {:ok, "Points sent"}
+        {:error, changeset} ->
+          {:error, changeset}
+    end
+  end
 end

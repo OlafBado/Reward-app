@@ -22,6 +22,15 @@
               <li class="nav-item">
                 <%= link "Log out", to: Routes.session_path(@conn, :delete, @current_user), method: "delete", class: "nav-link text-white"  %>
               </li>
+              <li class="nav-item">
+                <%= link "List of users", to: Routes.user_path(@conn, :index), class: "nav-link text-white" %>
+              </li>
+              <li class="nav-item">
+                <%= link "Add reward", to: Routes.reward_path(@conn, :new), class: "nav-link text-white" %>
+              </li>
+              <li class="nav-item">
+                <%= link "Rewards", to: Routes.reward_path(@conn, :index), class: "nav-link text-white" %>
+              </li>
               <li class="nav-item text-white p-2">
                 <%= @current_user.total_points %>
               </li>

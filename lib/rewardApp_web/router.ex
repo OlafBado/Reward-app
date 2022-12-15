@@ -31,7 +31,7 @@ defmodule RewardAppWeb.Router do
     get "/:id/edit", UserController, :edit
     put "/:id", UserController, :update
     delete "/:id", UserController, :delete
-
+    post "/:id", UserController, :send
   end
 
   scope "/sessions", RewardAppWeb do
@@ -40,6 +40,20 @@ defmodule RewardAppWeb.Router do
     get "/new", SessionController, :new
     post "/", SessionController, :create
     delete "/:id", SessionController, :delete
+  end
+
+  scope "/rewards", RewardAppWeb do
+    pipe_through :browser
+
+    get "/", RewardController, :index
+    get "/new", RewardController, :new
+    post "/", RewardController, :create
+  end
+
+  scope "/user_rewards", RewardAppWeb do
+    pipe_through :browser
+
+    post "/", UserRewardsController, :create
   end
 
   # Other scopes may use custom stacks.

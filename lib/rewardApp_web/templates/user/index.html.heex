@@ -5,7 +5,10 @@
     <tr>
       <th scope="col">#</th>
       <th scope="col">Name</th>
+      <th scope="col">Points</th>
       <th scope="col">Send points</th>
+      <th scope="col">Action</th>
+
     </tr>
   </thead>
   <tbody class="table-group-divider">
@@ -14,6 +17,15 @@
       <tr>
         <td><%= user.id %></td>
         <td><%= user.name %></td>
+        <td><%= user.total_points %></td>
+        <td>
+          <%= form_for @conn, Routes.user_path(@conn, :send, user), [as: :user, method: :post], fn f -> %>
+          <div class="input-group">
+            <%= number_input f, :points, class: "form-control" %>
+            <%= submit "Send", class: "btn btn-primary" %>
+          </div>
+          <% end %>
+        </td>
         <td>
           <span><%= link "Show", to: Routes.user_path(@conn, :show, user) %></span>
           <span><%= link "Edit", to: Routes.user_path(@conn, :edit, user), data: [confirm: "Are you sure?"] %></span>
