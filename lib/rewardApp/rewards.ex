@@ -20,7 +20,7 @@ defmodule RewardApp.Rewards do
 
   def get_reward!(id), do: Repo.get!(Reward, id)
 
-  def change_reward(%Reward{} = reward, attrs) do
+  def change_reward(%Reward{} = reward, attrs \\ %{}) do
     Reward.changeset(reward, attrs)
   end
 
@@ -28,5 +28,11 @@ defmodule RewardApp.Rewards do
     %Reward{}
     |> Reward.changeset(attrs)
     |> Repo.insert()
+  end
+
+  def update_reward(%Reward{} = reward, attrs) do
+    reward
+    |> Reward.changeset(attrs)
+    |> Repo.update()
   end
 end

@@ -1,28 +1,75 @@
-<h1>Show User</h1>
+<h1 class="mb-4 mt-4"><%= @user.name %> profile</h1>
 
-<ul>
+<section style="background-color: #eee;">
+  <div class="container py-5">
 
-  <li>
-    <strong>Name:</strong>
-    <%= @user.name %>
-  </li>
+    <div class="row">
+      <div class="col-lg-4">
+        <div class="card mb-4">
+          <div class="card-body text-center">
+            <img src="/images/user.png" alt="avatar"
+              class="img-fluid" style="width: 150px;">
+            <h5 class="my-3"><%= @user.name %></h5>
+            <p class="text-muted mb-3"><%= @user.email %></p>
+              <%= if @current_user.email == @user.email or @current_user.role == "admin" do %>
+                <%= link "Edit",to: Routes.user_path(@conn, :edit, @user), class: "btn btn-outline-primary d-block" %>
+              <% end %>
+          </div>
+        </div>
 
-  <li>
-    <strong>Name:</strong>
-    <%= @user.name %>
-  </li>
-
-  <li>
-    <strong>Role:</strong>
-    <%= @user.role %>
-  </li>
-
-  <li>
-    <strong>Total points:</strong>
-    <%= @user.total_points %>
-  </li>
-
-</ul>
-
-<span><%= link "Edit", to: Routes.user_path(@conn, :edit, @user) %></span> |
-<span><%= link "Back", to: Routes.user_path(@conn, :index) %></span>
+      </div>
+      <div class="col-lg-8">
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-sm-3">
+                <p class="mb-0">Name</p>
+              </div>
+              <div class="col-sm-9">
+                <p class="text-muted mb-0"><%= @user.name %></p>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-sm-3">
+                <p class="mb-0">Email</p>
+              </div>
+              <div class="col-sm-9">
+                <p class="text-muted mb-0"><%= @user.email %></p>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-sm-3">
+                <p class="mb-0">Joined on</p>
+              </div>
+              <div class="col-sm-9">
+                <p class="text-muted mb-0"><%= "#{@user.inserted_at.year}-#{@user.inserted_at.month}-#{@user.inserted_at.day}"%></p>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-sm-3">
+                <p class="mb-0">Role</p>
+              </div>
+              <div class="col-sm-9">
+                <p class="text-muted mb-0"><%= @user.role %></p>
+              </div>
+            </div>
+            <%= if @current_user.email == @user.email or @current_user.role == "admin" do %>
+            <hr>
+            <div class="row">
+              <div class="col-sm-3">
+                <p class="mb-0">Total points</p>
+              </div>
+              <div class="col-sm-9">
+                <p class="text-muted mb-0" id="points"><%= @user.total_points %></p>
+              </div>
+            </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

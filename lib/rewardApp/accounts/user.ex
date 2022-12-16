@@ -16,7 +16,7 @@ defmodule RewardApp.Accounts.User do
   @doc false
   def changeset(user, attrs) do
     user
-    |> cast(attrs, [:name, :email])
+    |> cast(attrs, [:name, :email, :role])
     |> validate_required([:name, :email])
     |> validate_format(:email, ~r/@/)
     |> validate_length(:name, min: 2)
@@ -45,7 +45,7 @@ defmodule RewardApp.Accounts.User do
     user
     |> cast(points, [:total_points])
     |> validate_required(:total_points)
-    |> validate_number(:total_points, greater_than_or_equal_to: 0, message: "You don't have enough points!")
+    |> validate_number(:total_points, greater_than_or_equal_to: 0)
   end
 
 end

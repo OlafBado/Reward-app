@@ -1,0 +1,30 @@
+<h1 class="mb-4 mt-4">Edit <%= @reward.name %></h1>
+
+<%= form_for @changeset, Routes.reward_path(@conn, :update, @reward), fn f -> %>
+
+<div class="row d-flex justify-content-center align-items-center h-100">
+<div class="col-md-9 col-lg-6 col-xl-5">
+    <img src="/images/reward_edit.svg" class="img-fluid" alt="edit reward" />
+</div>
+<div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
+
+<div class="form-outline mb-4">
+    <%= label f, :name, class: "form-label" %>
+    <%= text_input f, :name, class: "form-control form-control-lg" %>
+    <%= error_tag f, :name %>
+</div>
+<div class="form-outline mb-4">
+    <%= label f, :description, class: "form-label" %>
+    <%= text_input f, :description, class: "form-control form-control-lg" %>
+    <%= error_tag f, :description %>
+</div>
+<div class="form-outline mb-4">
+    <%= label f, :price, class: "form-label" %>
+    <%= number_input f, :price, class: "form-control form-control-lg" %>
+    <%= error_tag f, :price %>
+</div>
+<%= submit "Save", class: "btn btn-primary" %>
+</div>
+</div>
+
+<% end %>

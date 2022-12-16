@@ -5,18 +5,20 @@ defmodule RewardAppWeb.UserController do
   alias RewardApp.Accounts.User
 
   plug RewardAppWeb.RequireAuth when action in [:index, :show, :edit, :update, :delete, :send]
+  plug :check_profile_owner when action in [:edit, :update, :delete]
 
-  # defp authenticate(conn, _opts) do
-  #   if conn.assigns.current_user do
-  #     conn
-  #   else
-  #     conn
-  #     |> put_flash(:error, "You must be logged in to access this page.")
-  #     |> redirect(to: "/")
-  #     |> halt()
-  #   end
-  # end
+  defp check_profile_owner(conn, _params) do
+    %{:path_params => %{"id" => id}} = conn
 
+    if conn.assigns.current_user.id == String.to_integer(id) do
+      conn
+    else
+      conn
+      |> put_flash(:error, "You must be the owner of this profile to access this page.")
+      |> redirect(to: "/")
+      |> halt()
+    end
+  end
   def index(conn, _params) do
     users = Accounts.list_users()
     render(conn, "index.html", users: users)
@@ -57,15 +59,15 @@ defmodule RewardAppWeb.UserController do
     user = Accounts.get_user!(id)
 
     case Accounts.update_user(user, user_params) do
-      {:ok, user} ->
+      {:ok, _user} ->
         conn
         |> put_flash(:info, "User updated successfully.")
-        |> redirect(to: Routes.user_path(conn, :show, user))
+        |> redirect(to: Routes.user_path(conn, :index))
 
-      {:error, _changeset} ->
+      {:error, changeset} ->
         conn
         |> put_flash(:error, "There was an error updating the user.")
-        |> redirect(to: Routes.user_path(conn, :index))
+        |> render("edit.html", user: user, changeset: changeset)
     end
   end
 

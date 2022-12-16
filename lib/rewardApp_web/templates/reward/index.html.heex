@@ -4,14 +4,19 @@
 <div class="col-md-4">
     <div class="card">
     <div class="card-body">
-      <h5 class="card-title"><%=reward.name%></h5>
+      <h5 class="card-title d-inline"><%=reward.name%></h5>
       <p class="card-text">
         <%=reward.description%>
       </p>
       <p class="card-text">
         <small class="text-muted">Price: <%=reward.price%></small>
       </p>
-      <%= link "Pick", to: Routes.user_reward_path(@conn, :create, reward_id: reward.id), method: :post, class: "btn btn-primary" %>
+      <div class="col text-center">
+        <%= link "Pick", to: Routes.user_reward_path(@conn, :create, reward_id: reward.id), method: :post, class: "btn btn-primary w-75" %>
+        <%= if @current_user.role == "admin" do %>
+          <%= link "Edit", to: Routes.reward_path(@conn, :edit, reward), class: "btn btn-outline-primary w-75 mt-3" %>
+        <%= end %>
+      </div>
     </div>
   </div>
 </div>

@@ -48,6 +48,8 @@ defmodule RewardAppWeb.Router do
     get "/", RewardController, :index
     get "/new", RewardController, :new
     post "/", RewardController, :create
+    get "/:id/edit", RewardController, :edit
+    put "/:id", RewardController, :update
   end
 
   scope "/user_rewards", RewardAppWeb do

@@ -68,9 +68,17 @@ defmodule RewardApp.Accounts do
 
   """
   def update_user(%User{} = user, attrs) do
-    user
-    |> User.changeset(attrs)
-    |> Repo.update()
+
+    if attrs["total_points"] do
+      user
+      |> User.user_points_changeset(attrs)
+      |> Repo.update()
+    else
+      user
+      |> User.changeset(attrs)
+      |> Repo.update()
+    end
+
   end
 
   @doc """
@@ -178,13 +186,6 @@ defmodule RewardApp.Accounts do
         {:error, :not_found}
       end
   end
-
-  def update_user_points(%User{} = user, attrs) do
-    user
-    |> User.user_points_changeset(attrs)
-    |> Repo.update()
-  end
-
   def validate_points(points) do
     cond do
       points == "" ->
@@ -199,9 +200,9 @@ defmodule RewardApp.Accounts do
   end
 
   def send_points(sender, receiver_id, points) do
-      case update_user_points(sender, %{total_points: sender.total_points - String.to_integer(points)}) do
+      case update_user(sender, %{"total_points" => sender.total_points - String.to_integer(points)}) do
         {:ok, _user} ->
-          update_user_points(get_user!(receiver_id), %{total_points: get_user!(receiver_id).total_points + String.to_integer(points)})
+          update_user(get_user!(receiver_id), %{"total_points" => get_user!(receiver_id).total_points + String.to_integer(points)})
           {:ok, "Points sent"}
         {:error, changeset} ->
           {:error, changeset}
@@ -210,7 +211,7 @@ defmodule RewardApp.Accounts do
 
   def set_points_monthly do
     for user <- list_users() do
-      update_user_points(user, %{total_points: 50})
+      update_user(user, %{"total_points" => 50})
     end
   end
 end
