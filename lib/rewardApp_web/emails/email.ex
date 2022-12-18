@@ -3,7 +3,7 @@ defmodule RewardApp.Email do
 
   def reward_email(user_reward, user) do
     new_email()
-    |> from("RewardApp Support")
+    |> from("RewardApp@support")
     |> to(user.email)
     |> subject("You have redeemed a reward!")
     |> put_html_layout({RewardAppWeb.EmailLayoutView, "email.html"})
