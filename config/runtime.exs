@@ -28,6 +28,18 @@ if config_env() == :prod do
       For example: ecto://USER:PASS@HOST/DATABASE
       """
 
+      mailgun_api_key =
+    System.get_env("MAILGUN_API_KEY") ||
+      raise """
+      environment variable MAILGUN_API_KEY is missing.
+      """
+
+        domain =
+    System.get_env("MAILGUN_DOMAIN") ||
+      raise """
+      environment variable MAILGUN_DOMAIN is missing.
+      """
+
   maybe_ipv6 = if System.get_env("ECTO_IPV6"), do: [:inet6], else: []
 
   config :rewardApp, RewardApp.Repo,
@@ -36,6 +48,10 @@ if config_env() == :prod do
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
     socket_options: maybe_ipv6
 
+  config :rewardApp, RewardApp.Mailer,
+    adapter: Bamboo.MailgunAdapter,
+    api_key: mailgun_api_key,
+    domain: domain
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you
   # want to use a different value for prod and you most likely don't want

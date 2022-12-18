@@ -1,3 +1,3 @@
 defmodule RewardApp.Mailer do
-  use Swoosh.Mailer, otp_app: :rewardApp
+  use Bamboo.Mailer, otp_app: :rewardApp
 end

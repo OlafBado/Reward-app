@@ -52,6 +52,10 @@ defmodule RewardApp.MixProject do
       {:pbkdf2_elixir, "~> 2.0"},
       {:dart_sass, "~> 0.5", runtime: Mix.env() == :dev},
       {:phoenix_swoosh, "~> 1.0"},
+      {:gen_smtp, "~> 1.0"},
+      {:hackney, "~> 1.9"},
+      {:bamboo, github: "thoughtbot/bamboo"},
+
     ]
   end
 
