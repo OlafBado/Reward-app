@@ -1,7 +1,7 @@
 defmodule RewardAppWeb.UserRewardController do
   use RewardAppWeb, :controller
 
-  alias RewardApp.{UserRewards, Mailer}
+  alias RewardApp.{UserRewards, Mailer, Email}
   # alias RewardAppWeb.Emails.RewardEmail
 
   def index(conn, _parans) do
@@ -9,9 +9,9 @@ defmodule RewardAppWeb.UserRewardController do
     render(conn, "index.html", user_rewards: user_rewards)
   end
 
-  def send_welcome_email do
-    RewardApp.Email.welcome_email()   # Create your email
-    |> Mailer.deliver_now() # Send your email
+  def send_reward_email(user_reward, user) do
+    Email.reward_email(user_reward, user)
+    |> Mailer.deliver_later()
   end
 
   def create(conn, %{"reward_id" => reward_id}) do
@@ -19,13 +19,9 @@ defmodule RewardAppWeb.UserRewardController do
 
     case UserRewards.create_user_reward(user, reward_id) do
       {:ok, user_reward} ->
-        send_welcome_email()
-        # RewardAppWeb.Emails.Test.welcome() |>  Mailer.deliver()
-        # # user
-        # # |> RewardEmail.reward_email(user_reward)
-        # # |> Mailer.deliver_later()
+        send_reward_email(user_reward, user)
         conn
-        # |> put_flash(:info, "The reward has been successfully selected.")
+        |> put_flash(:info, "The reward has been successfully selected.")
         |> redirect(to: Routes.reward_path(conn, :index))
       {:error, _changeset} ->
         conn

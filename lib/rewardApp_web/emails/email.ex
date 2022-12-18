@@ -1,13 +1,12 @@
 defmodule RewardApp.Email do
-  import Bamboo.Email
+  use Bamboo.Template, view: RewardAppWeb.EmailView
 
-  def welcome_email do
-    new_email(
-      to: "niebiel1@gmail.com",
-      from: "support@myapp.com",
-      subject: "hello:D production",
-      html_body: "<strong>Thanks for joining!</strong>",
-      text_body: "Thanks for joining!"
-    )
+  def reward_email(user_reward, user) do
+    new_email()
+    |> from("RewardApp Support")
+    |> to(user.email)
+    |> subject("You have redeemed a reward!")
+    |> put_html_layout({RewardAppWeb.EmailLayoutView, "email.html"})
+    |> render("reward_email.html", reward: user_reward.reward, name: user.name)
   end
 end
