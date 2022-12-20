@@ -7,6 +7,5 @@ defmodule RewardApp.Repo.Migrations.AddUserNameToUserRewards do
     end
 
     rename table(:user_rewards), :user, to: :email
-
   end
 end

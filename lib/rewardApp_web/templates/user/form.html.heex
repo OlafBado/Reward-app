@@ -1,32 +1,35 @@
 <section class="vh-100 mt-5">
-    <div class="container-fluid h-custom d-flex">
-        <div class="row d-flex justify-content-center align-items-center h-100">
-            <div class="col-md-9 col-lg-6 col-xl-5">
-                <img src="/images/register.svg" class="img-fluid" alt="smaple image">
-            </div>
-            <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
-            <h1 class="pb-3">Register</h1>
-            <.form let={f} for={@changeset} action={@action}>
-              <div class="form-outline mb-4">
-                <%= label f, :name, class: "form-label" %>
-                <%= text_input f, :name, placeholder: "Name", class: "form-control form-control-lg" %>
-                <%= error_tag f, :name %>
-              </div>
-              <div class="form-outline mb-4">
-                <%= label f, :email, class: "form-label"  %>
-                <%= text_input f, :email, placeholder: "Email", class: "form-control form-control-lg"  %>
-                <%= error_tag f, :email %>
-              </div>
-              <div class="form-outline mb-4">
-                <%= label f, :password, class: "form-label"  %>
-                <%= password_input f, :password, placeholder: "Password", class: "form-control form-control-lg"  %>
-                <%= error_tag f, :password %>
-              </div>
-              <div class="d-grid col-12">
-                <%= submit "Register", class: "btn btn-primary btn-lg btn-block" %>
-              </div>
-            </.form>
-          </div>
-        </div>
+  <div class="container-fluid h-custom d-flex">
+    <div class="row d-flex justify-content-center align-items-center h-100">
+      <div class="col-md-9 col-lg-6 col-xl-5">
+        <img src="/images/register.svg" class="img-fluid" alt="smaple image" />
       </div>
+      <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
+        <h1 class="pb-3">Register</h1>
+        <.form let={f} for={@changeset} action={@action}>
+          <div class="form-outline mb-4">
+            <%= label(f, :name, class: "form-label") %>
+            <%= text_input(f, :name, placeholder: "Name", class: "form-control form-control-lg") %>
+            <%= error_tag(f, :name) %>
+          </div>
+          <div class="form-outline mb-4">
+            <%= label(f, :email, class: "form-label") %>
+            <%= text_input(f, :email, placeholder: "Email", class: "form-control form-control-lg") %>
+            <%= error_tag(f, :email) %>
+          </div>
+          <div class="form-outline mb-4">
+            <%= label(f, :password, class: "form-label") %>
+            <%= password_input(f, :password,
+              placeholder: "Password",
+              class: "form-control form-control-lg"
+            ) %>
+            <%= error_tag(f, :password) %>
+          </div>
+          <div class="d-grid col-12">
+            <%= submit("Register", class: "btn btn-primary btn-lg btn-block") %>
+          </div>
+        </.form>
+      </div>
+    </div>
+  </div>
 </section>

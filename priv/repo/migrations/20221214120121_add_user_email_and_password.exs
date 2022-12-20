@@ -8,6 +8,5 @@ defmodule RewardApp.Repo.Migrations.AddUserEmailAndPassword do
     end
 
     create unique_index(:users, [:name])
-
-    end
+  end
 end

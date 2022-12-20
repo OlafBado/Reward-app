@@ -62,7 +62,6 @@ defmodule RewardAppWeb.Router do
     get "/report", UserRewardController, :show
   end
 
-
   # Enables LiveDashboard only for development
   #
   # If you want to use the LiveDashboard in production, you should put
@@ -78,7 +77,6 @@ defmodule RewardAppWeb.Router do
 
       live_dashboard "/dashboard", metrics: RewardAppWeb.Telemetry
     end
-
   end
 
   # Enables the Swoosh mailbox preview in development.

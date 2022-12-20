@@ -23,6 +23,7 @@ defmodule RewardAppWeb.RewardController do
         conn
         |> put_flash(:info, "Reward created successfully.")
         |> redirect(to: Routes.reward_path(conn, :index))
+
       {:error, changeset} ->
         render(conn, "new.html", changeset: changeset)
     end
@@ -36,11 +37,13 @@ defmodule RewardAppWeb.RewardController do
 
   def update(conn, %{"id" => id, "reward" => reward_params}) do
     reward = Rewards.get_reward!(id)
+
     case Rewards.update_reward(reward, reward_params) do
       {:ok, _reward} ->
         conn
         |> put_flash(:info, "Reward updated successfully.")
         |> redirect(to: Routes.reward_path(conn, :index))
+
       {:error, changeset} ->
         conn
         |> put_flash(:error, "Something went wrong.")

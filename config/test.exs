@@ -7,9 +7,9 @@ import Config
 # Run `mix help test` for more information.
 config :rewardApp, RewardApp.Repo,
   username: "postgres",
-  password: "postgres",
+  password: "1234",
   hostname: "localhost",
-  database: "rewardapp_test#{System.get_env("MIX_TEST_PARTITION")}",
+  database: "reward_test",
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 10
 

@@ -7,6 +7,5 @@ defmodule RewardApp.Repo.Migrations.AddRewardsTable do
       add :price, :integer
       add :description, :string
     end
-
   end
 end

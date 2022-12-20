@@ -12,7 +12,7 @@ config :rewardApp, RewardAppWeb.Endpoint,
       DartSass,
       :install_and_run,
       [:default, ~w(--embed-source-map --source-map-urls=absolute --watch)]
-  }
+    }
   ]
 
 # ## SSL Support

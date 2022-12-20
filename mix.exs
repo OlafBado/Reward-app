@@ -58,7 +58,6 @@ defmodule RewardApp.MixProject do
       {:dotenv, "~> 2.0", only: [:dev, :test]},
       {:dotenv_parser, "~> 2.0"},
       {:quantum, "~> 3.0"}
-
     ]
   end
 
@@ -74,7 +73,11 @@ defmodule RewardApp.MixProject do
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
-      "assets.deploy": ["esbuild default --minify","sass default --no-source-map --style=compressed", "phx.digest"]
+      "assets.deploy": [
+        "esbuild default --minify",
+        "sass default --no-source-map --style=compressed",
+        "phx.digest"
+      ]
     ]
   end
 end

@@ -1,26 +1,29 @@
 <h1 class="mb-4 mt-4"><%= @month %> <%= @year %> report</h1>
 
 <table class="table">
-    <thead class="table-primary">
-        <tr>
-            <th scope="col">Name</th>
-            <th scope="col">Collected rewards</th>
-        </tr>
-    </thead>
-    <tbody class="table-group-divider">
-        <%= for user <- @users do %>
-            <tr>
-                <td><%= user.name %></td>
-                <td>
-                <%= if length(user.reward) == 0 do %>
-                    <p>None</p>
-                <% else %>
-                <%= for reward <- user.reward do %>
-                    <p><%= reward %></p>
-                <% end %>
-                <% end %>
-                </td>
-            </tr>
-        <% end %>
-    </tbody>
+  <thead class="table-primary">
+    <tr>
+      <th scope="col">User name</th>
+
+      <th scope="col">Collected rewards</th>
+    </tr>
+  </thead>
+
+  <tbody class="table-group-divider">
+    <%= for user <- @users do %>
+      <tr>
+        <td><%= user.name %></td>
+
+        <td>
+          <%= if length(user.reward) == 0 do %>
+            <p>None</p>
+          <% else %>
+            <%= for reward <- user.reward do %>
+              <p><%= reward %></p>
+            <% end %>
+          <% end %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
 </table>

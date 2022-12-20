@@ -8,6 +8,7 @@ defmodule RewardAppWeb.RequireAdmin do
     IO.puts("++++++")
     IO.inspect(opts)
     IO.puts("++++++")
+
     if conn.assigns.current_user.role == "admin" do
       conn
     else

@@ -1,28 +1,36 @@
 <section class="vh-100 mt-5">
-    <div class="container-fluid h-custom d-flex">
-        <div class="row d-flex justify-content-center align-items-center h-100">
-            <div class="col-md-9 col-lg-6 col-xl-5">
-                <img src="/images/login.svg" class="img-fluid" alt="login" />
-            </div>
-            <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
-                <h1 class="pb-3">Log in</h1>
-                <%= form_for @conn, Routes.session_path(@conn, :create), [as:
+  <div class="container-fluid h-custom d-flex">
+    <div class="row d-flex justify-content-center align-items-center h-100">
+      <div class="col-md-9 col-lg-6 col-xl-5">
+        <img src="/images/login.svg" class="img-fluid" alt="login" />
+      </div>
+
+      <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
+        <h1 class="pb-3">Log in</h1>
+
+        <%= form_for @conn, Routes.session_path(@conn, :create), [as:
                 :session], fn f -> %>
-                <div class="form-outline mb-4">
-                    <%= label f, :email, class: "form-label" %> <%= text_input f, :email, placeholder: "Email", class: "form-control
-                    form-control-lg" %>
-                </div>
-                <div class="form-outline mb-4">
-                    <%= label f, :password, class: "form-label" %> <%=
-                    password_input f, :password, placeholder: "Password", class:
-                    "form-control form-control-lg" %>
-                </div>
-                <div class="d-grid col-12">
-                    <%= submit "Log in", class: "btn btn-primary btn-lg
-                    btn-block" %>
-                </div>
-                <% end %>
-            </div>
-        </div>
+          <div class="form-outline mb-4">
+            <%= label(f, :email, class: "form-label") %> <%= text_input(f, :email,
+              placeholder: "Email",
+              class: "form-control
+                    form-control-lg"
+            ) %>
+          </div>
+
+          <div class="form-outline mb-4">
+            <%= label(f, :password, class: "form-label") %> <%= password_input(f, :password,
+              placeholder: "Password",
+              class: "form-control form-control-lg"
+            ) %>
+          </div>
+
+          <div class="d-grid col-12">
+            <%= submit("Log in", class: "btn btn-primary btn-lg
+                    btn-block") %>
+          </div>
+        <% end %>
+      </div>
     </div>
+  </div>
 </section>

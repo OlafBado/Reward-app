@@ -43,8 +43,6 @@ config :rewardApp, RewardAppWeb.Endpoint,
 
 # config :swoosh, :api_client, Swoosh.ApiClient.Hackney
 
-
-
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.14.29",

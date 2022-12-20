@@ -14,16 +14,16 @@ defmodule RewardApp.UserRewards do
     for user_reward <- user_rewards do
       user_name = Accounts.get_user!(user_reward.user_id).name
       reward_name = Rewards.get_reward!(user_reward.reward_id).name
+
       %{
         user_name: user_name,
         reward_name: reward_name,
         inserted_at: user_reward.inserted_at
       }
     end
-
   end
 
-  def create_user_reward(user,  reward_id \\ %{}) do
+  def create_user_reward(user, reward_id \\ %{}) do
     reward = Rewards.get_reward!(reward_id)
 
     case Accounts.update_user(user, %{"total_points" => user.total_points - reward.price}) do
@@ -31,6 +31,7 @@ defmodule RewardApp.UserRewards do
         %UserReward{}
         |> UserReward.changeset(%{user_id: user.id, reward_id: reward.id})
         |> Repo.insert()
+
       {:error, changeset} ->
         {:error, changeset}
     end
@@ -53,35 +54,36 @@ defmodule RewardApp.UserRewards do
 
   def create_query({start_date, end_date}) do
     from u in RewardApp.Accounts.User,
-    left_join: ur in RewardApp.UserRewards.UserReward,
-    on: ur.user_id == u.id,
-    left_join: r in RewardApp.Rewards.Reward,
-    on: r.id == ur.reward_id
-    and fragment("? BETWEEN ? AND ?", ur.inserted_at, ^start_date, ^end_date),
-    select: %{name: u.name, reward: r.name}
+      left_join: ur in RewardApp.UserRewards.UserReward,
+      on: ur.user_id == u.id,
+      left_join: r in RewardApp.Rewards.Reward,
+      on:
+        r.id == ur.reward_id and
+          fragment("? BETWEEN ? AND ?", ur.inserted_at, ^start_date, ^end_date),
+      select: %{name: u.name, reward: r.name}
   end
-
 
   defp check_for_nil(list) do
     Enum.any?(list, fn %{reward: value} -> value == nil end)
   end
 
-
   defp group_list(list) do
-      list
-      |> Enum.group_by(fn %{name: name} -> name end)
-      |> Enum.map(fn {name, values} ->
-        case check_for_nil(values) do
-          true -> %{name: name, reward: []}
-          _ -> %{name: name, reward: Enum.map(values, fn %{reward: reward} -> reward end)}
-        end
-      end)
+    list
+    |> Enum.group_by(fn %{name: name} -> name end)
+    |> Enum.map(fn {name, values} ->
+      case check_for_nil(values) do
+        true -> %{name: name, reward: []}
+        _ -> %{name: name, reward: Enum.map(values, fn %{reward: reward} -> reward end)}
+      end
+    end)
   end
 
   def generate_report(%{"report" => %{"month" => month, "year" => year}}) do
     create_date_range(String.to_integer(year), String.to_integer(month))
     |> create_query
-    |> Repo.all
+    |> Repo.all()
+
+
     |> group_list
   end
 
@@ -101,6 +103,5 @@ defmodule RewardApp.UserRewards do
       "12" -> "December"
       _ -> "Invalid month"
     end
-end
-
+  end
 end

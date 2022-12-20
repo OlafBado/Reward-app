@@ -68,7 +68,6 @@ defmodule RewardApp.Accounts do
 
   """
   def update_user(%User{} = user, attrs) do
-
     if attrs["total_points"] do
       user
       |> User.user_points_changeset(attrs)
@@ -78,7 +77,6 @@ defmodule RewardApp.Accounts do
       |> User.changeset(attrs)
       |> Repo.update()
     end
-
   end
 
   @doc """
@@ -177,35 +175,45 @@ defmodule RewardApp.Accounts do
     user = Repo.get_by(User, email: email)
 
     cond do
-      user && Pbkdf2.verify_pass(password, user.password_hash)->
+      user && Pbkdf2.verify_pass(password, user.password_hash) ->
         {:ok, user}
+
       user ->
         {:error, :unauthorized}
+
       true ->
         Pbkdf2.no_user_verify()
         {:error, :not_found}
-      end
+    end
   end
+
   def validate_points(points) do
     cond do
       points == "" ->
         {:error, :empty_points}
+
       points < "0" ->
         {:error, :negative_points}
+
       points == "0" ->
         {:error, :zero_points}
+
       true ->
         {:ok, points}
     end
   end
 
   def send_points(sender, receiver_id, points) do
-      case update_user(sender, %{"total_points" => sender.total_points - String.to_integer(points)}) do
-        {:ok, _user} ->
-          update_user(get_user!(receiver_id), %{"total_points" => get_user!(receiver_id).total_points + String.to_integer(points)})
-          {:ok, "Points sent"}
-        {:error, changeset} ->
-          {:error, changeset}
+    case update_user(sender, %{"total_points" => sender.total_points - String.to_integer(points)}) do
+      {:ok, _user} ->
+        update_user(get_user!(receiver_id), %{
+          "total_points" => get_user!(receiver_id).total_points + String.to_integer(points)
+        })
+
+        {:ok, "Points sent"}
+
+      {:error, changeset} ->
+        {:error, changeset}
     end
   end
 

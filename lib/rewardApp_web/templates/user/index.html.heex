@@ -10,24 +10,24 @@
     </tr>
   </thead>
   <tbody class="table-group-divider">
-  <%= for user <- @users do %>
-    <%= if user != @current_user do %>
-      <tr>
-        <td><%= user.id %></td>
-        <td><%= user.name %></td>
-        <td>
-          <%= form_for @conn, Routes.user_path(@conn, :send, user), [as: :user, method: :post], fn f -> %>
-          <div class="input-group">
-            <%= number_input f, :points, class: "form-control" %>
-            <%= submit "Send", class: "btn btn-primary" %>
-          </div>
-          <% end %>
-        </td>
-        <td>
-          <span><%= link "Show profile", to: Routes.user_path(@conn, :show, user) %></span>
-        </td>
-      </tr>
+    <%= for user <- @users do %>
+      <%= if user != @current_user do %>
+        <tr>
+          <td><%= user.id %></td>
+          <td><%= user.name %></td>
+          <td>
+            <%= form_for @conn, Routes.user_path(@conn, :send, user), [as: :user, method: :post], fn f -> %>
+              <div class="input-group">
+                <%= number_input(f, :points, class: "form-control") %>
+                <%= submit("Send", class: "btn btn-primary") %>
+              </div>
+            <% end %>
+          </td>
+          <td>
+            <span><%= link("Show profile", to: Routes.user_path(@conn, :show, user)) %></span>
+          </td>
+        </tr>
+      <% end %>
     <% end %>
-  <% end %>
   </tbody>
 </table>

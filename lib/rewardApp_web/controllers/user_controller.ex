@@ -3,6 +3,7 @@ defmodule RewardAppWeb.UserController do
 
   alias RewardApp.Accounts
   alias RewardApp.Accounts.User
+  alias RewardAppWeb.Auth
 
   plug RewardAppWeb.RequireAuth when action in [:index, :show, :edit, :update, :delete, :send]
   plug :check_profile_owner when action in [:edit, :update, :delete]
@@ -10,7 +11,8 @@ defmodule RewardAppWeb.UserController do
   defp check_profile_owner(conn, _params) do
     %{:path_params => %{"id" => id}} = conn
 
-    if conn.assigns.current_user.id == String.to_integer(id) || conn.assigns.current_user.role == "admin"  do
+    if conn.assigns.current_user.id == String.to_integer(id) ||
+         conn.assigns.current_user.role == "admin" do
       conn
     else
       conn
@@ -34,7 +36,7 @@ defmodule RewardAppWeb.UserController do
     case Accounts.register_user(user_params) do
       {:ok, user} ->
         conn
-        |> RewardAppWeb.Auth.login(user)
+        |> Auth.login(user)
         |> put_flash(:info, "User created successfully.")
         |> redirect(to: Routes.user_path(conn, :index))
 
@@ -60,10 +62,14 @@ defmodule RewardAppWeb.UserController do
     user = Accounts.get_user!(id)
 
     case Accounts.update_user(user, user_params) do
-      {:ok, _user} ->
+      {:ok, updated_user} ->
+        if conn.assigns.current_user.email == user.email do
+          Auth.update_current_user(conn, updated_user)
+        end
+
         conn
-        |> put_flash(:info, "User updated successfully.")
-        |> redirect(to: Routes.user_path(conn, :index))
+        |> put_flash(:info, "Profile updated successfully.")
+        |> render("show.html", user: updated_user)
 
       {:error, changeset} ->
         conn
@@ -80,6 +86,7 @@ defmodule RewardAppWeb.UserController do
     |> put_flash(:info, "User deleted successfully.")
     |> redirect(to: Routes.user_path(conn, :index))
   end
+
   def send(conn, %{"id" => receiver_id, "user" => %{"points" => points}}) do
     case Accounts.validate_points(points) do
       {:ok, points} ->
@@ -94,19 +101,21 @@ defmodule RewardAppWeb.UserController do
             |> put_flash(:error, "You do not have enough points to send.")
             |> redirect(to: Routes.user_path(conn, :index))
         end
+
       {:error, :zero_points} ->
         conn
         |> put_flash(:error, "You must send at least 1 point.")
         |> redirect(to: Routes.user_path(conn, :index))
+
       {:error, :negative_points} ->
         conn
         |> put_flash(:error, "You cannot send negative points.")
         |> redirect(to: Routes.user_path(conn, :index))
+
       {:error, :empty_points} ->
         conn
         |> put_flash(:error, "You must enter a number of points to send.")
         |> redirect(to: Routes.user_path(conn, :index))
     end
   end
-
 end

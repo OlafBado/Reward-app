@@ -11,9 +11,9 @@ defmodule RewardApp.AccountsFixtures do
     {:ok, user} =
       attrs
       |> Enum.into(%{
-        name: "some name",
-        role: "some role",
-        total_points: 42
+        name: "regular",
+        role: "member",
+        email: "regular@regular"
       })
       |> RewardApp.Accounts.create_user()
 

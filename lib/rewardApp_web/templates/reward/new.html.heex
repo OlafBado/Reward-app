@@ -1,28 +1,36 @@
 <h1 class="mb-4 mt-4">Add reward</h1>
 
 <%= form_for @changeset, Routes.reward_path(@conn, :create), fn f -> %>
+  <div class="row d-flex justify-content-center align-items-center h-100">
+    <div class="col-md-9 col-lg-6 col-xl-5">
+      <img src="/images/reward_new.svg" class="img-fluid" alt="new reward" />
+    </div>
 
-<div class="row d-flex justify-content-center align-items-center h-100">
-<div class="col-md-9 col-lg-6 col-xl-5">
-    <img src="/images/reward_new.svg" class="img-fluid" alt="new reward" />
-</div>
-<div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
-<div class="form-outline mb-4">
-    <%= label f, :name, class: "form-label" %> <%= text_input f, :name,
-    placeholder: "Reward name", class: "form-control form-control-lg" %> <%=
-    error_tag f, :name %>
-</div>
-<div class="form-outline mb-4">
-    <%= label f, :description, class: "form-label" %> <%= textarea f,
-    :description, placeholder: "Reward description", class: "form-control
-    form-control-lg" %> <%= error_tag f, :description %>
-</div>
-<div class="form-outline mb-4">
-    <%= label f, :price, class: "form-label" %> <%= number_input f, :price,
-    placeholder: "Reward price", class: "form-control form-control-lg" %> <%=
-    error_tag f, :price %>
-</div>
-<%= submit "Add reward", class: "btn btn-primary" %>
-</div>
-</div>
+    <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
+      <div class="form-outline mb-4">
+        <%= label(f, :name, class: "form-label") %> <%= text_input(f, :name,
+          placeholder: "Reward name",
+          class: "form-control form-control-lg"
+        ) %> <%= error_tag(f, :name) %>
+      </div>
+
+      <div class="form-outline mb-4">
+        <%= label(f, :description, class: "form-label") %> <%= textarea(
+          f,
+          :description,
+          placeholder: "Reward description",
+          class: "form-control
+    form-control-lg"
+        ) %> <%= error_tag(f, :description) %>
+      </div>
+
+      <div class="form-outline mb-4">
+        <%= label(f, :price, class: "form-label") %> <%= number_input(f, :price,
+          placeholder: "Reward price",
+          class: "form-control form-control-lg"
+        ) %> <%= error_tag(f, :price) %>
+      </div>
+      <%= submit("Add reward", class: "btn btn-primary") %>
+    </div>
+  </div>
 <% end %>

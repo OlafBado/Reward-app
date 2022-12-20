@@ -10,5 +10,4 @@ defmodule RewardApp.Repo.Migrations.AddUserRewardsTable do
       timestamps()
     end
   end
-
 end

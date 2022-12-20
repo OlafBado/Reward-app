@@ -1,15 +1,15 @@
-<h1 class="mb-4 mt-4">Recently given rewards</h1>
+<h1 class="mb-4 mt-4">Recent rewards</h1>
 
-<ul class="list-group">
-    <%= for user_reward <- @user_rewards do %>
-        <li class="list-group-item">
-            <h5 class="d-inline">
-                <%= user_reward.user_name %>
-            </h5>
-            receives
-            <h5 class="d-inline">
-                <%= user_reward.reward_name %>
-            </h5>
-        </li>
-    <% end %>
+<ul class="list-group gap-2 mb-4">
+  <%= for user_reward <- @user_rewards do %>
+    <li class="list-group-item rounded-3">
+      <h5 class="d-inline">
+        <%= user_reward.user_name %>
+      </h5>
+      receives
+      <h5 class="d-inline">
+        <%= user_reward.reward_name %>
+      </h5>
+    </li>
+  <% end %>
 </ul>

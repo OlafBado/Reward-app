@@ -8,7 +8,7 @@ defmodule RewardApp.Accounts.User do
     field :password, :string, virtual: true
     field :password_hash, :string
     field :role, :string
-    field :total_points, :integer
+    field :total_points, :integer, default: 50
 
     many_to_many :rewards, RewardApp.Rewards.Reward, join_through: "user_rewards"
 
@@ -38,16 +38,27 @@ defmodule RewardApp.Accounts.User do
     case changeset do
       %Ecto.Changeset{valid?: true, changes: %{password: pass}} ->
         put_change(changeset, :password_hash, Pbkdf2.hash_pwd_salt(pass))
+
       _ ->
         changeset
     end
   end
 
   def user_points_changeset(user, points) do
+    IO.inspect(points)
+
     user
     |> cast(points, [:total_points])
-    |> validate_required(:total_points)
+    |> validate_required([:total_points])
+    |> validate_points(points)
     |> validate_number(:total_points, greater_than_or_equal_to: 0)
   end
 
+  defp validate_points(changeset, %{"total_points" => points}) do
+    if points == "" do
+      add_error(changeset, :total_points, "can't be blank")
+    else
+      changeset
+    end
+  end
 end

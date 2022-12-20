@@ -1,12 +1,10 @@
 defmodule RewardAppWeb.UserRewardController do
   use RewardAppWeb, :controller
-  import Ecto.Query
 
   alias RewardApp.{UserRewards, Mailer, Email}
-  # alias RewardAppWeb.Emails.RewardEmail
 
   def index(conn, _parans) do
-    user_rewards = UserRewards.get_recent_rewards
+    user_rewards = UserRewards.get_recent_rewards()
     render(conn, "index.html", user_rewards: user_rewards)
   end
 
@@ -25,6 +23,7 @@ defmodule RewardAppWeb.UserRewardController do
         conn
         |> put_flash(:info, "The reward has been successfully selected.")
         |> redirect(to: Routes.reward_path(conn, :index))
+
       {:error, _changeset} ->
         conn
         |> put_flash(:error, "You don't have enough points to redeem this reward.")
@@ -39,7 +38,10 @@ defmodule RewardAppWeb.UserRewardController do
   def show(conn, %{"report" => %{"month" => month, "year" => year}} = params) do
     users = UserRewards.generate_report(params)
 
-    render(conn, "show.html", users: users, year: year, month: RewardApp.UserRewards.convert_string_to_month(month))
+    render(conn, "show.html",
+      users: users,
+      year: year,
+      month: RewardApp.UserRewards.convert_string_to_month(month)
+    )
   end
-
 end

@@ -3,6 +3,7 @@ defmodule RewardApp.Email do
 
   def reward_email(reward_id, user) do
     reward_name = RewardApp.Rewards.get_reward!(reward_id).name
+
     new_email()
     |> from("RewardApp@support")
     |> to(user.email)

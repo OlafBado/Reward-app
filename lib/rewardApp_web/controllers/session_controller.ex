@@ -12,6 +12,7 @@ defmodule RewardAppWeb.SessionController do
         |> RewardAppWeb.Auth.login(user)
         |> put_flash(:info, "Welcome back!")
         |> redirect(to: Routes.user_path(conn, :index))
+
       {:error, _reason} ->
         conn
         |> put_flash(:error, "Invalid email or password.")
