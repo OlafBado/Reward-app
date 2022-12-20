@@ -10,6 +10,8 @@ defmodule RewardApp.Accounts.User do
     field :role, :string
     field :total_points, :integer
 
+    many_to_many :rewards, RewardApp.Rewards.Reward, join_through: "user_rewards"
+
     timestamps()
   end
 

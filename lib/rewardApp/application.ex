@@ -8,16 +8,12 @@ defmodule RewardApp.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      # Start the Ecto repository
       RewardApp.Repo,
-      # Start the Telemetry supervisor
       RewardAppWeb.Telemetry,
-      # Start the PubSub system
       {Phoenix.PubSub, name: RewardApp.PubSub},
-      # Start the Endpoint (http/https)
-      RewardAppWeb.Endpoint
-      # Start a worker by calling: RewardApp.Worker.start_link(arg)
-      # {RewardApp.Worker, arg}
+      RewardAppWeb.Endpoint,
+      RewardApp.Scheduler
+      # RewardApp.Tasks.UpdateDatabase
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

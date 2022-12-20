@@ -1,0 +1,9 @@
+<h1 class="mb-4 mt-4">Select the year and month to generate the report</h1>
+
+<%= form_for @conn, Routes.user_reward_path(@conn, :show), [as: :report, method: :get, class: "form-group"], fn f -> %>
+    <%= label f, :year, class: "control-label" %>
+    <%= select f, :year, 2020..2050, class: "form-control" %>
+    <%= label f, :month, class: "control-label" %>
+    <%= select f, :month, get_months(), class: "form-control" %>
+    <%= submit "Submit", class: "btn btn-primary mt-3" %>
+<% end %>

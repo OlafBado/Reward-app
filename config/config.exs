@@ -7,6 +7,11 @@
 # General application configuration
 import Config
 
+config :rewardApp, RewardApp.Scheduler,
+  jobs: [
+    {"0 0 1 * *", {RewardApp.Scheduler, :update_database, []}}
+  ]
+
 config :dart_sass,
   version: "1.54.5",
   default: [

@@ -56,7 +56,8 @@ defmodule RewardApp.MixProject do
       {:hackney, "~> 1.9"},
       {:bamboo, github: "thoughtbot/bamboo"},
       {:dotenv, "~> 2.0", only: [:dev, :test]},
-      {:dotenv_parser, "~> 2.0"}
+      {:dotenv_parser, "~> 2.0"},
+      {:quantum, "~> 3.0"}
 
     ]
   end

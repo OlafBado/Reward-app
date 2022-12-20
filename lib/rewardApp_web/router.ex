@@ -1,4 +1,5 @@
 defmodule RewardAppWeb.Router do
+  alias RewardAppWeb.UserRewardController
   use RewardAppWeb, :router
 
   pipeline :browser do
@@ -52,11 +53,13 @@ defmodule RewardAppWeb.Router do
     put "/:id", RewardController, :update
   end
 
-  scope "/user_rewards", RewardAppWeb do
+  scope "/user_rewards" do
     pipe_through :browser
 
     get "/", UserRewardController, :index
     post "/", UserRewardController, :create
+    get "/reports/new", UserRewardController, :new
+    get "/report", UserRewardController, :show
   end
 
 

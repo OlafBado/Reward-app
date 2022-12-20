@@ -6,6 +6,8 @@ defmodule RewardApp.Rewards.Reward do
     field :name, :string
     field :price, :integer
     field :description, :string
+
+    many_to_many :users, RewardApp.Accounts.User, join_through: "user_rewards"
   end
 
   def changeset(struct, params \\ %{}) do

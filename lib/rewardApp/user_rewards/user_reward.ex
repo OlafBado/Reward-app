@@ -3,17 +3,15 @@ defmodule RewardApp.UserRewards.UserReward do
   import Ecto.Changeset
 
   schema "user_rewards" do
-    field :name, :string
-    field :email, :string
-    field :reward, :string
-    field :cost, :integer
+    belongs_to :user, RewardApp.Accounts.User
+    belongs_to :reward, RewardApp.Rewards.Reward
 
     timestamps()
   end
 
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, [:name, :email, :reward, :cost])
-    |> validate_required([:name, :email, :reward, :cost])
+    |> cast(params, [:user_id, :reward_id])
+    |> validate_required([:user_id, :reward_id])
   end
 end

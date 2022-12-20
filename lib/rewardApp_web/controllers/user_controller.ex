@@ -10,7 +10,7 @@ defmodule RewardAppWeb.UserController do
   defp check_profile_owner(conn, _params) do
     %{:path_params => %{"id" => id}} = conn
 
-    if conn.assigns.current_user.id == String.to_integer(id) do
+    if conn.assigns.current_user.id == String.to_integer(id) || conn.assigns.current_user.role == "admin"  do
       conn
     else
       conn
@@ -19,6 +19,7 @@ defmodule RewardAppWeb.UserController do
       |> halt()
     end
   end
+
   def index(conn, _params) do
     users = Accounts.list_users()
     render(conn, "index.html", users: users)

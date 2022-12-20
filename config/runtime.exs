@@ -1,5 +1,15 @@
 import Config
 
+if config_env() == :dev do
+  DotenvParser.load_file(".env")
+end
+
+# Configure your database
+config :rewardApp, RewardApp.Repo,
+  ssl: true,
+  ssl_opts: [log_level: :error],
+  url: System.fetch_env!("URL")
+
 # config/runtime.exs is executed for all environments, including
 # during releases. It is executed after compilation and before the
 # system starts, so it is typically used to load production configuration
@@ -97,13 +107,3 @@ if config_env() == :prod do
   #
   # See https://hexdocs.pm/swoosh/Swoosh.html#module-installation for details.
 end
-
-if config_env() == :dev do
-  DotenvParser.load_file(".env")
-end
-
-# Configure your database
-config :rewardApp, RewardApp.Repo,
-  ssl: true,
-  ssl_opts: [log_level: :error],
-  url: System.fetch_env!("URL")

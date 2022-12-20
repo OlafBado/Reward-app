@@ -4,11 +4,11 @@
     <%= for user_reward <- @user_rewards do %>
         <li class="list-group-item">
             <h5 class="d-inline">
-                <%= user_reward.name %>
+                <%= user_reward.user_name %>
             </h5>
-            picks up
+            receives
             <h5 class="d-inline">
-                <%= user_reward.reward %>
+                <%= user_reward.reward_name %>
             </h5>
         </li>
     <% end %>
