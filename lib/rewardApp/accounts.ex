@@ -205,12 +205,12 @@ defmodule RewardApp.Accounts do
 
   def send_points(sender, receiver_id, points) do
     case update_user(sender, %{"total_points" => sender.total_points - String.to_integer(points)}) do
-      {:ok, _user} ->
+      {:ok, user} ->
         update_user(get_user!(receiver_id), %{
           "total_points" => get_user!(receiver_id).total_points + String.to_integer(points)
         })
 
-        {:ok, "Points sent"}
+        {:ok, user}
 
       {:error, changeset} ->
         {:error, changeset}

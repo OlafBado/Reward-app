@@ -16,12 +16,20 @@ defmodule RewardApp.AccountsTest do
       email: "12@12",
       password: "123123123"
     }
+    @valid_register_attrs2 %{
+      name: "hi",
+      role: "hello",
+      email: "hello@hello",
+      password: "123123123"
+    }
     @invalid_register_attrs %{
       name: "some updated name",
       role: "some updated role",
       email: "12@12",
       password: "123"
     }
+    @email "12@12"
+    @password "123123123"
 
     test "list_users/0 returns all users" do
       user_fixture()
@@ -38,6 +46,7 @@ defmodule RewardApp.AccountsTest do
       assert user.name == "some updated name"
       assert user.role == "some updated role"
       assert user.email == "12@12"
+      assert user.total_points == 50
     end
 
     test "create_user/1 with invalid data returns error changeset" do
@@ -51,6 +60,7 @@ defmodule RewardApp.AccountsTest do
       assert user.name == "some updated name"
       assert user.role == "some updated role"
       assert user.email == "12@12"
+      assert user.total_points == 50
     end
 
     test "update_user/2 with invalid data returns error changeset" do
@@ -73,7 +83,6 @@ defmodule RewardApp.AccountsTest do
       user = user_fixture()
       update_attrs = %{"total_points" => "100"}
       assert {:ok, %User{} = user} = Accounts.update_user(user, update_attrs)
-
       assert user.total_points == 100
     end
 
@@ -108,15 +117,13 @@ defmodule RewardApp.AccountsTest do
     end
 
     test "authenticate_by_email_and_password/2 returns error when password is wrong" do
-      {_, user} = Accounts.register_user(@valid_register_attrs)
+      {_, _user} = Accounts.register_user(@valid_register_attrs)
 
-      assert {:error, :unauthorized} =
-               Accounts.authenticate_by_email_and_password(user.email, "111111111")
+      assert {:error, :unauthorized} = Accounts.authenticate_by_email_and_password(@email, "123")
     end
 
     test "authenticate_by_email_and_password/2 returns error when user not found" do
-      assert {:error, :not_found} =
-               Accounts.authenticate_by_email_and_password("example@abc", "111111111")
+      assert {:error, :not_found} = Accounts.authenticate_by_email_and_password(@email, @password)
     end
 
     test "validate_points/1 error when points are empty" do
@@ -131,11 +138,39 @@ defmodule RewardApp.AccountsTest do
       assert {:error, :zero_points} = Accounts.validate_points("0")
     end
 
-    test "send_points/3 returns ok if user has enough points" do
-      {_, user} = Accounts.register_user(@valid_register_attrs)
-      {_, user2} = Accounts.register_user(@valid_register_attrs)
+    test "send_points/3 returns ok if sender has enough points and decrement sender's points" do
+      {_, sender} = Accounts.register_user(@valid_register_attrs)
+      {_, receiver} = Accounts.register_user(@valid_register_attrs2)
 
-      IO.inspect(user)
+      assert {:ok, user} = Accounts.send_points(sender, receiver.id, "50")
+      assert user.total_points == 0
+    end
+
+    test "send_points/3 returns error if sender doesnt' have enough points" do
+      {_, sender} = Accounts.register_user(@valid_register_attrs)
+      {_, receiver} = Accounts.register_user(@valid_register_attrs2)
+
+      assert {:error, %Ecto.Changeset{errors: [total_points: {error, _rest}]}} =
+               Accounts.send_points(sender, receiver.id, "150")
+
+      assert error == "must be greater than or equal to %{number}"
+    end
+
+    test "set_points_monthly updates users points" do
+      {_, user1} = Accounts.register_user(@valid_register_attrs)
+      {_, user2} = Accounts.register_user(@valid_register_attrs2)
+
+      {:ok, %User{} = updated_user1} = Accounts.update_user(user1, %{"total_points" => "100"})
+      {:ok, %User{} = updated_user2} = Accounts.update_user(user2, %{"total_points" => "90"})
+
+      assert updated_user1.total_points == 100
+      assert updated_user2.total_points == 90
+
+      assert [ok: %{total_points: user1_points}, ok: %{total_points: user2_points}] =
+               Accounts.set_points_monthly()
+
+      assert user1_points == 50
+      assert user2_points == 50
     end
   end
 end

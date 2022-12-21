@@ -3,7 +3,5 @@ defmodule RewardApp.Scheduler do
 
   def update_database do
     RewardApp.Accounts.set_points_monthly()
-
-
   end
 end

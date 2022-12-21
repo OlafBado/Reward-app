@@ -37,19 +37,23 @@ defmodule RewardApp.UserRewards do
     end
   end
 
-  defp create_naive_date(year, month, day) do
+  def create_naive_date(year, month, day) do
     case NaiveDateTime.new(year, month, day, 0, 0, 0) do
-      {:ok, naive_date} -> naive_date
+      {:ok, naive_date} -> {:ok, naive_date}
       {:error, :invalid_date} -> {:error, :invalid_date}
     end
   end
 
-  defp create_date_range(year, month) do
-    start_date = create_naive_date(year, month, 1)
-    end_of_month = Date.end_of_month(start_date)
-    end_date = create_naive_date(end_of_month.year, end_of_month.month, end_of_month.day)
-
-    {start_date, end_date}
+  def create_date_range(year, month) do
+    with {:ok, start_date} <- create_naive_date(year, month, 1),
+         end_of_month <- Date.end_of_month(start_date),
+         {:ok, end_date} <-
+           create_naive_date(end_of_month.year, end_of_month.month, end_of_month.day),
+         end_date <- NaiveDateTime.add(end_date, 86399) do
+      {start_date, end_date}
+    else
+      {:error, _} -> {:error, :invalid_date}
+    end
   end
 
   def create_query({start_date, end_date}) do
@@ -63,11 +67,11 @@ defmodule RewardApp.UserRewards do
       select: %{name: u.name, reward: r.name}
   end
 
-  defp check_for_nil(list) do
+  def check_for_nil(list) do
     Enum.any?(list, fn %{reward: value} -> value == nil end)
   end
 
-  defp group_list(list) do
+  def group_list(list) do
     list
     |> Enum.group_by(fn %{name: name} -> name end)
     |> Enum.map(fn {name, values} ->
@@ -82,8 +86,6 @@ defmodule RewardApp.UserRewards do
     create_date_range(String.to_integer(year), String.to_integer(month))
     |> create_query
     |> Repo.all()
-
-
     |> group_list
   end
 

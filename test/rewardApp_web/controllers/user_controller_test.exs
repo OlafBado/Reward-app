@@ -1,81 +1,130 @@
 defmodule RewardAppWeb.UserControllerTest do
   use RewardAppWeb.ConnCase
-
+  import Plug.Conn
   import RewardApp.AccountsFixtures
 
-  @create_attrs %{name: "some name", role: "some role", total_points: 42}
+  @create_attrs %{name: "some name", email: "some@email", password: "999000999"}
   @update_attrs %{name: "some updated name", role: "some updated role", total_points: 43}
-  @invalid_attrs %{name: nil, role: nil, total_points: nil}
+  @invalid_attrs %{name: "abc", email: "abcdef", password: "999000999"}
+  @invalid_attrs_password %{name: "abc", email: "abcdef@abc", password: "123"}
+  @invalid_attrs_name %{name: "", email: "abcdef@abc", password: "999000999"}
 
   describe "index" do
-    test "lists all users", %{conn: conn} do
+    setup [:create_user]
+
+    test "lists all users when user is signed in", %{conn: conn, user: user} do
+      conn = Plug.Test.init_test_session(conn, user_id: user.id)
       conn = get(conn, Routes.user_path(conn, :index))
-      assert html_response(conn, 200) =~ "Listing Users"
+      assert html_response(conn, 200)
+    end
+
+    test "redirects to home page when not signed in", %{conn: conn} do
+      conn = get(conn, Routes.user_path(conn, :index))
+      assert html_response(conn, 302)
+      assert redirected_to(conn) == "/"
     end
   end
 
   describe "new user" do
-    test "renders form", %{conn: conn} do
+    test "shows register form", %{conn: conn} do
       conn = get(conn, Routes.user_path(conn, :new))
-      assert html_response(conn, 200) =~ "New User"
+      assert html_response(conn, 200)
     end
   end
 
   describe "create user" do
-    test "redirects to show when data is valid", %{conn: conn} do
+    test "redirects to index when data is valid", %{conn: conn} do
       conn = post(conn, Routes.user_path(conn, :create), user: @create_attrs)
 
-      assert %{id: id} = redirected_params(conn)
-      assert redirected_to(conn) == Routes.user_path(conn, :show, id)
-
+      assert redirected_to(conn) == Routes.user_path(conn, :index)
+      assert id = get_session(conn, :user_id)
       conn = get(conn, Routes.user_path(conn, :show, id))
-      assert html_response(conn, 200) =~ "Show User"
+      assert html_response(conn, 200)
     end
 
-    test "renders errors when data is invalid", %{conn: conn} do
+    test "renders errors when email is invalid", %{conn: conn} do
       conn = post(conn, Routes.user_path(conn, :create), user: @invalid_attrs)
-      assert html_response(conn, 200) =~ "New User"
+      assert html_response(conn, 200)
+
+      assert conn.assigns.changeset.errors[:email] ==
+               {"has invalid format", [validation: :format]}
+    end
+
+    test "renders errors when password is invalid", %{conn: conn} do
+      conn = post(conn, Routes.user_path(conn, :create), user: @invalid_attrs_password)
+      assert html_response(conn, 200)
+
+      assert conn.assigns.changeset.errors[:password] ==
+               {"should be at least %{count} character(s)",
+                [
+                  count: 6,
+                  validation: :length,
+                  kind: :min,
+                  type: :string
+                ]}
+    end
+
+    test "renders errors when name is invalid", %{conn: conn} do
+      conn = post(conn, Routes.user_path(conn, :create), user: @invalid_attrs_name)
+      assert html_response(conn, 200)
+
+      assert conn.assigns.changeset.errors[:name] ==
+               {"can't be blank",
+                [
+                  validation: :required
+                ]}
     end
   end
 
   describe "edit user" do
     setup [:create_user]
 
-    test "renders form for editing chosen user", %{conn: conn, user: user} do
+    test "renders form for editing chosen user when logged in", %{conn: conn, user: user} do
+      conn = Plug.Test.init_test_session(conn, user_id: user.id)
       conn = get(conn, Routes.user_path(conn, :edit, user))
-      assert html_response(conn, 200) =~ "Edit User"
+      assert html_response(conn, 200)
+    end
+
+    test "redirects to home page when not logged in", %{conn: conn, user: user} do
+      conn = get(conn, Routes.user_path(conn, :edit, user))
+      assert html_response(conn, 302)
+    end
+
+    test "redirects to home page when it's not current user's profile", %{conn: conn, user: user} do
+      conn = get(conn, Routes.user_path(conn, :edit, user))
+      assert html_response(conn, 302)
     end
   end
 
-  describe "update user" do
-    setup [:create_user]
+  # describe "update user" do
+  #   setup [:create_user]
 
-    test "redirects when data is valid", %{conn: conn, user: user} do
-      conn = put(conn, Routes.user_path(conn, :update, user), user: @update_attrs)
-      assert redirected_to(conn) == Routes.user_path(conn, :show, user)
+  #   test "redirects when data is valid", %{conn: conn, user: user} do
+  #     conn = put(conn, Routes.user_path(conn, :update, user), user: @update_attrs)
+  #     assert redirected_to(conn) == Routes.user_path(conn, :show, user)
 
-      conn = get(conn, Routes.user_path(conn, :show, user))
-      assert html_response(conn, 200) =~ "some updated name"
-    end
+  #     conn = get(conn, Routes.user_path(conn, :show, user))
+  #     assert html_response(conn, 200) =~ "some updated name"
+  #   end
 
-    test "renders errors when data is invalid", %{conn: conn, user: user} do
-      conn = put(conn, Routes.user_path(conn, :update, user), user: @invalid_attrs)
-      assert html_response(conn, 200) =~ "Edit User"
-    end
-  end
+  #   test "renders errors when data is invalid", %{conn: conn, user: user} do
+  #     conn = put(conn, Routes.user_path(conn, :update, user), user: @invalid_attrs)
+  #     assert html_response(conn, 200) =~ "Edit User"
+  #   end
+  # end
 
-  describe "delete user" do
-    setup [:create_user]
+  # describe "delete user" do
+  #   setup [:create_user]
 
-    test "deletes chosen user", %{conn: conn, user: user} do
-      conn = delete(conn, Routes.user_path(conn, :delete, user))
-      assert redirected_to(conn) == Routes.user_path(conn, :index)
+  #   test "deletes chosen user", %{conn: conn, user: user} do
+  #     conn = delete(conn, Routes.user_path(conn, :delete, user))
+  #     assert redirected_to(conn) == Routes.user_path(conn, :index)
 
-      assert_error_sent 404, fn ->
-        get(conn, Routes.user_path(conn, :show, user))
-      end
-    end
-  end
+  #     assert_error_sent 404, fn ->
+  #       get(conn, Routes.user_path(conn, :show, user))
+  #     end
+  #   end
+  # end
 
   defp create_user(_) do
     user = user_fixture()
