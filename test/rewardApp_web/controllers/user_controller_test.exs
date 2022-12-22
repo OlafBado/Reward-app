@@ -187,6 +187,81 @@ defmodule RewardAppWeb.UserControllerTest do
     end
   end
 
+  describe "send" do
+    setup [:create_user]
+
+    test "redirects to home page if user is not logged in", %{conn: conn, user: user} do
+      conn = post(conn, Routes.user_path(conn, :send, user))
+      assert redirected_to(conn) == Routes.page_path(conn, :index)
+      assert get_flash(conn, :error) == "You must be logged in to access this page."
+    end
+
+    test "sends points if sender has enough points", %{
+      conn: conn,
+      user: sender
+    } do
+      receiver = user_fixture(%{name: "abc", email: "aaa@aaa", total_points: 100})
+
+      conn = Plug.Test.init_test_session(conn, user_id: sender.id)
+      conn = post(conn, Routes.user_path(conn, :send, receiver), %{"user" => %{"points" => "50"}})
+
+      assert redirected_to(conn) == Routes.user_path(conn, :index)
+      assert get_flash(conn, :info) == "Points sent successfully."
+    end
+
+    test "sends errors if user doesn't have enough points", %{
+      conn: conn,
+      user: sender
+    } do
+      receiver = user_fixture(%{name: "abc", email: "aaa@aaa"})
+
+      conn = Plug.Test.init_test_session(conn, user_id: sender.id)
+      conn = post(conn, Routes.user_path(conn, :send, receiver), %{"user" => %{"points" => "60"}})
+
+      assert redirected_to(conn) == Routes.user_path(conn, :index)
+      assert get_flash(conn, :error) == "You do not have enough points to send."
+    end
+
+    test "sends errors if user sends 0 points", %{
+      conn: conn,
+      user: sender
+    } do
+      receiver = user_fixture(%{name: "abc", email: "aaa@aaa", total_points: 100})
+
+      conn = Plug.Test.init_test_session(conn, user_id: sender.id)
+      conn = post(conn, Routes.user_path(conn, :send, receiver), %{"user" => %{"points" => "0"}})
+
+      assert redirected_to(conn) == Routes.user_path(conn, :index)
+      assert get_flash(conn, :error) == "You must send at least 1 point."
+    end
+
+    test "sends errors if user sends negative points", %{
+      conn: conn,
+      user: sender
+    } do
+      receiver = user_fixture(%{name: "abc", email: "aaa@aaa", total_points: 100})
+
+      conn = Plug.Test.init_test_session(conn, user_id: sender.id)
+      conn = post(conn, Routes.user_path(conn, :send, receiver), %{"user" => %{"points" => "-1"}})
+
+      assert redirected_to(conn) == Routes.user_path(conn, :index)
+      assert get_flash(conn, :error) == "You cannot send negative points."
+    end
+
+    test "sends errors if user sends empty form", %{
+      conn: conn,
+      user: sender
+    } do
+      receiver = user_fixture(%{name: "abc", email: "aaa@aaa", total_points: 100})
+
+      conn = Plug.Test.init_test_session(conn, user_id: sender.id)
+      conn = post(conn, Routes.user_path(conn, :send, receiver), %{"user" => %{"points" => ""}})
+
+      assert redirected_to(conn) == Routes.user_path(conn, :index)
+      assert get_flash(conn, :error) == "You must enter a number of points to send."
+    end
+  end
+
   defp create_user(_) do
     user = user_fixture()
     %{user: user}

@@ -21,7 +21,7 @@ config :rewardApp, RewardAppWeb.Endpoint,
   server: false
 
 # In test we don't send emails.
-config :rewardApp, RewardApp.Mailer, adapter: Swoosh.Adapters.Test
+config :rewardApp, RewardApp.Mailer, adapter: Bamboo.TestAdapter
 
 # Print only warnings and errors during test
 config :logger, level: :warn

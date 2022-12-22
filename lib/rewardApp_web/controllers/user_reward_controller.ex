@@ -3,6 +3,9 @@ defmodule RewardAppWeb.UserRewardController do
 
   alias RewardApp.{UserRewards, Mailer, Email}
 
+  plug RewardAppWeb.RequireAuth
+  plug RewardAppWeb.RequireAdmin when action in [:new, :show]
+
   def index(conn, _parans) do
     user_rewards = UserRewards.get_recent_rewards()
     render(conn, "index.html", user_rewards: user_rewards)
