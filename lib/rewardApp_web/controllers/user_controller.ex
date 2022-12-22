@@ -63,13 +63,9 @@ defmodule RewardAppWeb.UserController do
 
     case Accounts.update_user(user, user_params) do
       {:ok, updated_user} ->
-        if conn.assigns.current_user.email == user.email do
-          Auth.update_current_user(conn, updated_user)
-        end
-
         conn
         |> put_flash(:info, "Profile updated successfully.")
-        |> render("show.html", user: updated_user)
+        |> redirect(to: Routes.user_path(conn, :show, updated_user.id))
 
       {:error, changeset} ->
         conn
