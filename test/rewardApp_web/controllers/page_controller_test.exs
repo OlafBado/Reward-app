@@ -1,5 +1,5 @@
 defmodule RewardAppWeb.PageControllerTest do
-  use RewardAppWeb.ConnCase
+  use RewardAppWeb.ConnCase, async: true
 
   test "GET /", %{conn: conn} do
     conn = get(conn, "/")

@@ -1,19 +1,14 @@
 defmodule RewardApp.RewardsTest do
-  use RewardApp.DataCase
+  use RewardApp.DataCase, async: true
+  import RewardApp.RewardsFixtures
 
   alias RewardApp.Rewards
+  alias RewardApp.Rewards.Reward
+
+  @valid_attrs %{name: "snow", description: "cold snow", price: 20}
+  @invalid_attrs %{name: nil, description: nil, price: nil}
 
   describe "rewards" do
-    alias RewardApp.Rewards.Reward
-
-    import RewardApp.RewardsFixtures
-
-    @valid_attrs %{name: "snow", description: "cold snow", price: 20}
-    @invalid_attrs %{name: nil, description: nil, price: nil}
-    @invalid_attrs_pirce %{price: -10}
-    @invalid_attrs_name %{name: "", description: "example", price: 10}
-    @invalid_attrs_description %{name: "abc", description: "", price: 20}
-
     test "list_rewards/0 returns all rewards" do
       reward_fixture()
       assert length(Rewards.list_rewards()) == 1
@@ -36,7 +31,8 @@ defmodule RewardApp.RewardsTest do
     end
 
     test "create_reward/1 with negative price returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Rewards.create_reward(@invalid_attrs_pirce)
+      assert {:error, %Ecto.Changeset{}} =
+               Rewards.create_reward(Map.put(@valid_attrs, :price, -10))
     end
 
     test "update_reward/2 with valid data updates the reward" do
@@ -54,19 +50,23 @@ defmodule RewardApp.RewardsTest do
 
     test "update_reward/2 with negative price returns error changeset" do
       reward = reward_fixture()
-      assert {:error, %Ecto.Changeset{}} = Rewards.update_reward(reward, @invalid_attrs_pirce)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Rewards.update_reward(reward, Map.put(@valid_attrs, :price, -10))
     end
 
     test "update_reward/2 with blank name returns error changeset" do
       reward = reward_fixture()
-      assert {:error, %Ecto.Changeset{}} = Rewards.update_reward(reward, @invalid_attrs_name)
+
+      assert {:error, %Ecto.Changeset{}} =
+               Rewards.update_reward(reward, Map.put(@valid_attrs, :name, ""))
     end
 
     test "update_reward/2 with blank description returns error changeset" do
       reward = reward_fixture()
 
       assert {:error, %Ecto.Changeset{}} =
-               Rewards.update_reward(reward, @invalid_attrs_description)
+               Rewards.update_reward(reward, Map.put(@valid_attrs, :description, ""))
     end
 
     test "change_reward/1 returns reward changeset" do

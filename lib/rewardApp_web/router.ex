@@ -1,6 +1,7 @@
 defmodule RewardAppWeb.Router do
-  alias RewardAppWeb.UserRewardController
   use RewardAppWeb, :router
+
+  alias RewardAppWeb.UserRewardController
 
   pipeline :browser do
     plug :accepts, ["html"]

@@ -4,11 +4,7 @@ defmodule RewardAppWeb.RequireAdmin do
 
   def init(opts), do: opts
 
-  def call(conn, opts) do
-    IO.puts("++++++")
-    IO.inspect(opts)
-    IO.puts("++++++")
-
+  def call(conn, _opts) do
     if conn.assigns.current_user.role == "admin" do
       conn
     else

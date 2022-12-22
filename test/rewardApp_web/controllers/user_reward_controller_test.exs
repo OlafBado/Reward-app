@@ -1,6 +1,6 @@
 defmodule RewardAppWeb.UserRewardControllerTest do
-  use RewardAppWeb.ConnCase
-  import Plug.Conn
+  use RewardAppWeb.ConnCase, async: true
+
   import RewardApp.RewardsFixtures
   import RewardApp.AccountsFixtures
   import RewardApp.UserRewardsFixtures
@@ -13,7 +13,7 @@ defmodule RewardAppWeb.UserRewardControllerTest do
     test "redirects to home page when not signed in", %{conn: conn} do
       conn = get(conn, Routes.user_reward_path(conn, :index))
       assert html_response(conn, 302)
-      assert redirected_to(conn) == "/"
+      assert redirected_to(conn) == Routes.session_path(conn, :new)
       assert get_flash(conn, :error) == "You must be logged in to access this page."
     end
 
@@ -31,7 +31,7 @@ defmodule RewardAppWeb.UserRewardControllerTest do
     test "redirects to home page when not signed in", %{conn: conn} do
       conn = post(conn, Routes.user_reward_path(conn, :create))
       assert html_response(conn, 302)
-      assert redirected_to(conn) == "/"
+      assert redirected_to(conn) == Routes.session_path(conn, :new)
       assert get_flash(conn, :error) == "You must be logged in to access this page."
     end
 
@@ -69,7 +69,7 @@ defmodule RewardAppWeb.UserRewardControllerTest do
     test "redirects if user is not logged in", %{conn: conn} do
       conn = get(conn, Routes.user_reward_path(conn, :new))
       assert html_response(conn, 302)
-      assert redirected_to(conn) == "/"
+      assert redirected_to(conn) == Routes.session_path(conn, :new)
       assert get_flash(conn, :error) == "You must be logged in to access this page."
     end
 
@@ -79,7 +79,7 @@ defmodule RewardAppWeb.UserRewardControllerTest do
       conn = get(conn, Routes.user_reward_path(conn, :new))
       assert user.role != "admin"
       assert html_response(conn, 302)
-      assert redirected_to(conn) == "/"
+      assert redirected_to(conn) == Routes.page_path(conn, :index)
       assert get_flash(conn, :error) == "You must be an admin to access this page."
     end
 
@@ -100,17 +100,17 @@ defmodule RewardAppWeb.UserRewardControllerTest do
       conn = get(conn, Routes.user_reward_path(conn, :show), @valid_attrs)
 
       assert html_response(conn, 302)
-      assert redirected_to(conn) == "/"
+      assert redirected_to(conn) == Routes.session_path(conn, :new)
       assert get_flash(conn, :error) == "You must be logged in to access this page."
     end
 
-    test "redirects if user is logged in but not an admin", %{conn: conn} do
+    test "redirects to home page if user is logged in but not an admin", %{conn: conn} do
       user = user_fixture(%{name: "abc", email: "exp@exp"})
       conn = Plug.Test.init_test_session(conn, user_id: user.id)
       conn = get(conn, Routes.user_reward_path(conn, :show), @valid_attrs)
       assert user.role != "admin"
       assert html_response(conn, 302)
-      assert redirected_to(conn) == "/"
+      assert redirected_to(conn) == Routes.page_path(conn, :index)
       assert get_flash(conn, :error) == "You must be an admin to access this page."
     end
 
@@ -125,6 +125,17 @@ defmodule RewardAppWeb.UserRewardControllerTest do
     end
   end
 
+  describe "send email to user after choosing reward" do
+    setup [:create_reward, :create_user]
+
+    test "send_reward_email", %{user: user, reward: reward} do
+      email = RewardAppWeb.UserRewardController.send_reward_email(reward.id, user)
+      assert {_, %{assigns: %{name: name, reward: received_reward}}} = email
+      assert name == user.name
+      assert received_reward == reward.name
+    end
+  end
+
   defp create_reward(_) do
     reward = reward_fixture()
     %{reward: reward}
@@ -136,12 +147,16 @@ defmodule RewardAppWeb.UserRewardControllerTest do
   end
 
   defp create_admin_user(_) do
-    user = user_fixture(%{name: "admin", email: "admin@admin", role: "admin"})
+    user = user_fixture(%{name: "admin", email: "admi#{counter()}n@admin", role: "admin"})
     %{admin_user: user}
   end
 
   defp create_user_reward(_) do
     user_reward = user_reward_fixture()
     %{user_reward: user_reward}
+  end
+
+  defp counter do
+    System.unique_integer([:positive])
   end
 end

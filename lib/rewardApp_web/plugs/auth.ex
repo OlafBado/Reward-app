@@ -7,6 +7,9 @@ defmodule RewardAppWeb.Auth do
     user_id = get_session(conn, :user_id)
 
     cond do
+      conn.assigns[:current_user] ->
+        conn
+
       user = user_id && Repo.get(RewardApp.Accounts.User, user_id) ->
         assign(conn, :current_user, user)
 
@@ -20,11 +23,6 @@ defmodule RewardAppWeb.Auth do
     |> assign(:current_user, user)
     |> put_session(:user_id, user.id)
     |> configure_session(renew: true)
-  end
-
-  def update_current_user(conn, user) do
-    conn
-    |> assign(:current_user, user)
   end
 
   def logout(conn) do

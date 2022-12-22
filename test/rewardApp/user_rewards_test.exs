@@ -1,25 +1,23 @@
 defmodule RewardApp.UserRewardsTest do
-  use RewardApp.DataCase
+  use RewardApp.DataCase, async: true
+
+  import RewardApp.UserRewardsFixtures
 
   alias RewardApp.Accounts
   alias RewardApp.UserRewards
 
+  @list [
+    %{name: "hello", reward: "ticket"},
+    %{name: "hello", reward: "snow"},
+    %{name: "abc", reward: "house"},
+    %{name: "abc", reward: "palm"}
+  ]
+  @grouped_list [
+    %{name: "abc", reward: ["house", "palm"]},
+    %{name: "hello", reward: ["ticket", "snow"]}
+  ]
+
   describe "user rewards" do
-    import RewardApp.UserRewardsFixtures
-
-    alias RewardApp.UserRewards.UserReward
-
-    @list [
-      %{name: "hello", reward: "ticket"},
-      %{name: "hello", reward: "snow"},
-      %{name: "abc", reward: "house"},
-      %{name: "abc", reward: "palm"}
-    ]
-    @grouped_list [
-      %{name: "abc", reward: ["house", "palm"]},
-      %{name: "hello", reward: ["ticket", "snow"]}
-    ]
-
     test "list_user_rewards/0 returns all user rewards" do
       user_reward_fixture()
       assert length(UserRewards.list_user_rewards()) == 1

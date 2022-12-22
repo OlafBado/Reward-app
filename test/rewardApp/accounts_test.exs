@@ -1,36 +1,17 @@
 defmodule RewardApp.AccountsTest do
-  use RewardApp.DataCase
+  use RewardApp.DataCase, async: true
+
+  import RewardApp.AccountsFixtures
 
   alias RewardApp.Accounts
+  alias RewardApp.Accounts.User
+
+  @invalid_attrs %{name: nil, role: nil, total_points: nil}
+  @valid_attrs %{name: "some updated name", role: "some updated role", email: "12@12"}
+  @email "12@12"
+  @password "123123123"
 
   describe "users" do
-    alias RewardApp.Accounts.User
-
-    import RewardApp.AccountsFixtures
-
-    @invalid_attrs %{name: nil, role: nil, total_points: nil}
-    @valid_attrs %{name: "some updated name", role: "some updated role", email: "12@12"}
-    @valid_register_attrs %{
-      name: "some updated name",
-      role: "some updated role",
-      email: "12@12",
-      password: "123123123"
-    }
-    @valid_register_attrs2 %{
-      name: "hi",
-      role: "hello",
-      email: "hello@hello",
-      password: "123123123"
-    }
-    @invalid_register_attrs %{
-      name: "some updated name",
-      role: "some updated role",
-      email: "12@12",
-      password: "123"
-    }
-    @email "12@12"
-    @password "123123123"
-
     test "list_users/0 returns all users" do
       user_fixture()
       assert length(Accounts.list_users()) == 1
@@ -81,8 +62,7 @@ defmodule RewardApp.AccountsTest do
 
     test "update_user/2 with total_points updates user points" do
       user = user_fixture()
-      update_attrs = %{"total_points" => "100"}
-      assert {:ok, %User{} = user} = Accounts.update_user(user, update_attrs)
+      assert {:ok, %User{} = user} = Accounts.update_user(user, %{"total_points" => "100"})
       assert user.total_points == 100
     end
 
@@ -93,31 +73,31 @@ defmodule RewardApp.AccountsTest do
 
     test "change_registration/2 returns an error if password is too short" do
       user = user_fixture()
-      result = Accounts.change_registration(user, @invalid_register_attrs)
+      result = Accounts.change_registration(user, Map.put(@valid_attrs, :password, "123"))
       {error, _rest} = result.errors[:password]
       assert %Ecto.Changeset{} = result
       assert error == "should be at least %{count} character(s)"
     end
 
     test "register_user/1 inserts user to db with valid data" do
-      result = Accounts.register_user(@valid_register_attrs)
+      result = Accounts.register_user(Map.put(@valid_attrs, :password, "999000999"))
 
       assert {:ok, %User{} = user} = result
       assert user.name == "some updated name"
       assert user.role == "some updated role"
       assert user.email == "12@12"
-      assert user.password == "123123123"
+      assert user.password == "999000999"
       assert user.password_hash != nil
     end
 
     test "authenticate_by_email_and_password/2 returns ok and user if password is correct" do
-      {_, user} = Accounts.register_user(@valid_register_attrs)
+      {_, user} = Accounts.register_user(Map.put(@valid_attrs, :password, "999000999"))
 
-      assert {:ok, %User{}} = Accounts.authenticate_by_email_and_password(user.email, "123123123")
+      assert {:ok, %User{}} = Accounts.authenticate_by_email_and_password(user.email, "999000999")
     end
 
     test "authenticate_by_email_and_password/2 returns error when password is wrong" do
-      {_, _user} = Accounts.register_user(@valid_register_attrs)
+      {_, _user} = Accounts.register_user(Map.put(@valid_attrs, :password, "999000999"))
 
       assert {:error, :unauthorized} = Accounts.authenticate_by_email_and_password(@email, "123")
     end
@@ -139,16 +119,24 @@ defmodule RewardApp.AccountsTest do
     end
 
     test "send_points/3 returns ok if sender has enough points and decrement sender's points" do
-      {_, sender} = Accounts.register_user(@valid_register_attrs)
-      {_, receiver} = Accounts.register_user(@valid_register_attrs2)
+      {_, sender} = Accounts.register_user(Map.put(@valid_attrs, :password, "999000999"))
+
+      {_, receiver} =
+        Accounts.register_user(
+          Map.replace(Map.put(@valid_attrs, :password, "999000888"), :email, "acd@acd")
+        )
 
       assert {:ok, user} = Accounts.send_points(sender, receiver.id, "50")
       assert user.total_points == 0
     end
 
     test "send_points/3 returns error if sender doesnt' have enough points" do
-      {_, sender} = Accounts.register_user(@valid_register_attrs)
-      {_, receiver} = Accounts.register_user(@valid_register_attrs2)
+      {_, sender} = Accounts.register_user(Map.put(@valid_attrs, :password, "999000999"))
+
+      {_, receiver} =
+        Accounts.register_user(
+          Map.replace(Map.put(@valid_attrs, :password, "999000888"), :email, "acd@acd")
+        )
 
       assert {:error, %Ecto.Changeset{errors: [total_points: {error, _rest}]}} =
                Accounts.send_points(sender, receiver.id, "150")
@@ -157,8 +145,12 @@ defmodule RewardApp.AccountsTest do
     end
 
     test "set_points_monthly updates users points" do
-      {_, user1} = Accounts.register_user(@valid_register_attrs)
-      {_, user2} = Accounts.register_user(@valid_register_attrs2)
+      {_, user1} = Accounts.register_user(Map.put(@valid_attrs, :password, "999000999"))
+
+      {_, user2} =
+        Accounts.register_user(
+          Map.replace(Map.put(@valid_attrs, :password, "999000888"), :email, "acd@acd")
+        )
 
       {:ok, %User{} = updated_user1} = Accounts.update_user(user1, %{"total_points" => "100"})
       {:ok, %User{} = updated_user2} = Accounts.update_user(user2, %{"total_points" => "90"})
