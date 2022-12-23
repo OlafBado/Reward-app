@@ -52,4 +52,20 @@ defmodule RewardAppWeb.RewardController do
         |> render("edit.html", reward: reward, changeset: changeset)
     end
   end
+
+  def delete(conn, %{"id" => id}) do
+    reward = Rewards.get_reward!(id)
+
+    case Rewards.update_reward(reward, %{"deleted" => true}) do
+      {:ok, _reward} ->
+        conn
+        |> put_flash(:info, "Reward deleted successfully.")
+        |> redirect(to: Routes.reward_path(conn, :index))
+
+      {:error, _changeset} ->
+        conn
+        |> put_flash(:error, "Something went wrong.")
+        |> redirect(to: Routes.reward_path(conn, :index))
+    end
+  end
 end

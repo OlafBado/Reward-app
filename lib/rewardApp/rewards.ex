@@ -15,7 +15,7 @@ defmodule RewardApp.Rewards do
   """
 
   def list_rewards do
-    Repo.all(Reward)
+    Repo.all(from r in Reward, where: r.deleted == false)
   end
 
   def get_reward!(id), do: Repo.get!(Reward, id)
