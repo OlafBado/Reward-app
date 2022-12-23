@@ -2,37 +2,29 @@ defmodule RewardAppWeb.RequireAuthTest do
   use RewardAppWeb.ConnCase, async: true
 
   import RewardApp.AccountsFixtures
+
   alias RewardAppWeb.RequireAuth
 
-  describe "call" do
-    test "redirects to log in page when user is not logged in", %{conn: conn} do
-      conn =
-        conn
-        |> bypass_through(RewardAppWeb.Router, :browser)
-        |> with_pipeline()
-        |> RequireAuth.call(%{})
+  setup %{conn: conn} do
+    conn =
+      conn
+      |> bypass_through(RewardAppWeb.Router, :browser)
+      |> get("/")
 
-      assert redirected_to(conn) == Routes.session_path(conn, :new)
-      assert get_flash(conn, :error) == "You must be logged in to access this page."
-    end
-
-    test "user passes through when current_user is assigned", %{conn: conn} do
-      user = user_fixture()
-
-      conn =
-        conn
-        |> Plug.Test.init_test_session(user_id: user.id)
-        |> with_pipeline()
-        |> RequireAuth.call(%{})
-
-      assert conn.assigns[:current_user] == user
-      assert conn.status != 302
-    end
+    {:ok, %{conn: conn}}
   end
 
-  defp with_pipeline(conn) do
-    conn
-    |> bypass_through(RewardAppWeb.Router, :browser)
-    |> get(Routes.user_path(conn, :index))
+  test "halts connection when no current_user exists", %{conn: conn} do
+    conn = RequireAuth.call(conn, %{})
+    assert conn.halted
+  end
+
+  test "user passes through when current_user is assigned", %{conn: conn} do
+    conn =
+      conn
+      |> assign(:current_user, user_fixture())
+      |> RequireAuth.call(%{})
+
+    refute conn.halted
   end
 end

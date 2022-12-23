@@ -4,36 +4,30 @@ defmodule RewardAppWeb.RequireAdminTest do
   import RewardApp.AccountsFixtures
   alias RewardAppWeb.RequireAdmin
 
-  describe "call" do
-    test "redirects to home page if user is not an admin", %{conn: conn} do
-      user = user_fixture()
+  setup %{conn: conn} do
+    conn =
+      conn
+      |> bypass_through(RewardAppWeb.Router, :browser)
+      |> get("/")
 
-      conn =
-        conn
-        |> Plug.Test.init_test_session(user_id: user.id)
-        |> with_pipeline()
-        |> RequireAdmin.call(%{})
-
-      assert redirected_to(conn) == Routes.page_path(conn, :index)
-      assert get_flash(conn, :error) == "You must be an admin to access this page."
-    end
-
-    test "renders form for new reward if user is an admin", %{conn: conn} do
-      user = user_fixture(%{role: "admin"})
-
-      conn =
-        conn
-        |> Plug.Test.init_test_session(user_id: user.id)
-        |> with_pipeline()
-        |> RequireAdmin.call(%{})
-
-      assert conn.status != 302
-    end
+    {:ok, %{conn: conn}}
   end
 
-  defp with_pipeline(conn) do
-    conn
-    |> bypass_through(RewardAppWeb.Router, :browser)
-    |> get(Routes.reward_path(conn, :new))
+  test "halts connection when current user is not an admin", %{conn: conn} do
+    conn =
+      conn
+      |> assign(:current_user, user_fixture())
+      |> RequireAdmin.call(%{})
+
+    assert conn.halted
+  end
+
+  test "user passes through if he is admin", %{conn: conn} do
+    conn =
+      conn
+      |> assign(:current_user, user_fixture(%{role: "admin"}))
+      |> RequireAdmin.call(%{})
+
+    refute conn.halted
   end
 end

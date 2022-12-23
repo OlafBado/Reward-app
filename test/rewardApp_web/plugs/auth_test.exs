@@ -5,74 +5,51 @@ defmodule RewardAppWeb.AuthTest do
 
   alias RewardAppWeb.Auth
 
-  describe "call" do
-    test "assign nil if no user_id in session", %{conn: conn} do
-      conn =
-        conn
-        |> with_pipeline()
+  setup %{conn: conn} do
+    conn =
+      conn
+      |> bypass_through(RewardAppWeb.Router, :browser)
+      |> get("/")
 
-      assert get_session(conn, :user_id) == nil
-      assert conn.assigns[:current_user] == nil
-    end
-
-    test "assign nil if user_id in session but user not found in database", %{conn: conn} do
-      conn =
-        conn
-        |> with_pipeline()
-        |> put_session(:user_id, 123)
-
-      assert get_session(conn, :user_id) == 123
-      assert conn.assigns[:current_user] == nil
-    end
-
-    test "assigns user if user_id in session and user in database", %{conn: conn} do
-      user = user_fixture()
-
-      conn =
-        conn
-        |> Plug.Test.init_test_session(user_id: user.id)
-        |> with_pipeline()
-
-      assert get_session(conn, :user_id) == user.id
-      assert conn.assigns[:current_user] == user
-    end
+    {:ok, %{conn: conn}}
   end
 
-  describe "login" do
-    test "assigns user to current_user and sets session", %{conn: conn} do
-      user = user_fixture()
+  test "login puts user in the session", %{conn: conn} do
+    conn =
+      conn
+      |> Auth.login(user_fixture())
+      |> send_resp(200, "")
 
-      conn =
-        conn
-        |> with_pipeline()
-        |> Auth.login(user)
-
-      assert get_session(conn, :user_id) == user.id
-      assert conn.assigns[:current_user] == user
-    end
+    assert get_session(conn, :user_id) == conn.assigns.current_user.id
+    next_conn = get(conn, "/")
+    assert get_session(next_conn, :user_id) == conn.assigns.current_user.id
   end
 
-  describe "logout" do
-    test "drops session", %{conn: conn} do
-      user = user_fixture()
+  test "logout drops session", %{conn: conn} do
+    conn =
+      conn
+      |> put_session(:user_id, 123)
+      |> Auth.logout()
+      |> send_resp(200, "")
 
-      conn =
-        conn
-        |> Plug.Test.init_test_session(user_id: user.id)
-        |> with_pipeline()
-        |> Auth.logout()
-        |> get(Routes.user_path(conn, :index))
-
-      assert get_session(conn, :user_id) == nil
-      assert conn.assigns[:current_user] == nil
-      assert redirected_to(conn) == Routes.session_path(conn, :new)
-      assert get_flash(conn, :error) == "You must be logged in to access this page."
-    end
+    next_conn = get(conn, "/")
+    refute get_session(next_conn, :user_id) == 123
   end
 
-  defp with_pipeline(conn) do
-    conn
-    |> bypass_through(RewardAppWeb.Router, :browser)
-    |> get(Routes.user_path(conn, :index))
+  test "call assigns user from session to current_user", %{conn: conn} do
+    user = user_fixture()
+
+    conn =
+      conn
+      |> put_session(:user_id, user.id)
+      |> Auth.call(Auth.init(%{}))
+
+    assert conn.assigns.current_user == user
+  end
+
+  test "call with no sesstion assigns current user to nil", %{conn: conn} do
+    conn = Auth.call(conn, Auth.init(%{}))
+
+    assert conn.assigns.current_user == nil
   end
 end
