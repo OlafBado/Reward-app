@@ -1,11 +1,13 @@
 defmodule RewardApp.UserRewardsFixtures do
-  def user_reward_fixture do
-    reward = RewardApp.RewardsFixtures.reward_fixture()
+  alias RewardApp.{Accounts, UserRewards, RewardsFixtures, AccountsFixtures}
+
+  def user_reward_fixture(user_attrs \\ %{}, reward_attrs \\ %{}) do
+    reward = RewardsFixtures.reward_fixture(reward_attrs)
 
     {:ok, user} =
-      RewardApp.AccountsFixtures.user_fixture()
-      |> RewardApp.Accounts.update_user(%{"total_points" => 200})
+      AccountsFixtures.user_fixture(user_attrs)
+      |> Accounts.update_user(%{"total_points" => 200})
 
-    RewardApp.UserRewards.create_user_reward(user, reward.id)
+    UserRewards.create_user_reward(user, reward.id)
   end
 end

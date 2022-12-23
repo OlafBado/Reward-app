@@ -16,7 +16,7 @@
 
         <td>
           <%= if length(user.reward) == 0 do %>
-            <p>None</p>
+            <p>---</p>
           <% else %>
             <%= for reward <- user.reward do %>
               <p><%= reward %></p>
