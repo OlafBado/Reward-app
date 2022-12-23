@@ -16,7 +16,11 @@
           ) %>
           <%= error_tag(f, :total_points) %>
         </div>
-        <%= submit("Save", class: "btn btn-primary") %>
+        <div class="form-outline mb-4">
+          <%= label(f, :role, class: "form-label") %>
+          <%= select(f, :role, ["admin", "member"], class: "form-control form-control-lg") %>
+        </div>
+        <%= submit("Save", class: "btn btn-primary float-end") %>
       </div>
     <% else %>
       <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">

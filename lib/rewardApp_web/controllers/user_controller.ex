@@ -60,6 +60,7 @@ defmodule RewardAppWeb.UserController do
 
   def update(conn, %{"id" => id, "user" => user_params}) do
     user = Accounts.get_user!(id)
+    IO.inspect(user_params)
 
     case Accounts.update_user(user, user_params) do
       {:ok, updated_user} ->

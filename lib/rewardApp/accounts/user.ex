@@ -7,7 +7,7 @@ defmodule RewardApp.Accounts.User do
     field :email, :string
     field :password, :string, virtual: true
     field :password_hash, :string
-    field :role, :string
+    field :role, :string, default: "member"
     field :total_points, :integer, default: 50
 
     many_to_many :rewards, RewardApp.Rewards.Reward, join_through: "user_rewards"
@@ -45,10 +45,8 @@ defmodule RewardApp.Accounts.User do
   end
 
   def user_points_changeset(user, points) do
-    IO.inspect(points)
-
     user
-    |> cast(points, [:total_points])
+    |> cast(points, [:total_points, :role])
     |> validate_required([:total_points])
     |> validate_points(points)
     |> validate_number(:total_points, greater_than_or_equal_to: 0)

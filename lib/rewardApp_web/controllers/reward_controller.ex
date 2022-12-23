@@ -4,8 +4,8 @@ defmodule RewardAppWeb.RewardController do
   alias RewardApp.Rewards
   alias RewardApp.Rewards.Reward
 
-  plug RewardAppWeb.RequireAuth when action in [:index, :new, :create, :edit, :update]
-  plug RewardAppWeb.RequireAdmin when action in [:new, :create, :edit, :update]
+  plug RewardAppWeb.RequireAuth when action in [:index, :new, :create, :edit, :update, :delete]
+  plug RewardAppWeb.RequireAdmin when action in [:new, :create, :edit, :update, :delete]
 
   def index(conn, _params) do
     rewards = Rewards.list_rewards()
