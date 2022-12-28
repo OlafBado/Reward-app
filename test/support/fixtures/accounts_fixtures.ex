@@ -42,4 +42,9 @@ defmodule RewardApp.AccountsFixtures do
 
     {:ok, user: user}
   end
+
+  def create_user(%{conn: conn, attrs: attrs}) do
+    user = user_fixture(attrs)
+    {:ok, conn: conn, create_user: user}
+  end
 end

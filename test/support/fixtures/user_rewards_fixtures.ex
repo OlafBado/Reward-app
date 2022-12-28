@@ -10,4 +10,9 @@ defmodule RewardApp.UserRewardsFixtures do
 
     UserRewards.create_user_reward(user, reward.id)
   end
+
+  def create_user_reward(_) do
+    user_reward = user_reward_fixture()
+    %{user_reward: user_reward}
+  end
 end

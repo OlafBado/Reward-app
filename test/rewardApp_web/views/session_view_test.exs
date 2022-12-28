@@ -1,6 +1,7 @@
 defmodule RewardAppWeb.SessionViewTest do
   use RewardAppWeb.ConnCase, async: true
   import Phoenix.View
+
   alias RewardAppWeb.SessionView
 
   test "renders new.html", %{conn: conn} do

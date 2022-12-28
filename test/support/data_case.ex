@@ -24,6 +24,9 @@ defmodule RewardApp.DataCase do
       import Ecto.Changeset
       import Ecto.Query
       import RewardApp.DataCase
+      import RewardApp.AccountsFixtures
+      import RewardApp.UserRewardsFixtures
+      import RewardApp.RewardsFixtures
     end
   end
 

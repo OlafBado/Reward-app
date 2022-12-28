@@ -11,4 +11,9 @@ defmodule RewardApp.RewardsFixtures do
 
     reward
   end
+
+  def create_reward(%{attrs: attrs}) do
+    reward = reward_fixture(attrs)
+    %{reward: reward}
+  end
 end

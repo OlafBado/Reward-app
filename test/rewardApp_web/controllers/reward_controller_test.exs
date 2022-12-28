@@ -25,7 +25,7 @@ defmodule RewardAppWeb.RewardControllerTest do
   describe "with a logged in user" do
     setup [:create_reward, :login]
 
-    @tag login_as: %{name: "juri"}
+    @tag login_as: %{name: "juri"}, attrs: %{}
     test "requires admin role on given actions even if logged in", %{conn: conn} do
       Enum.each(
         [
@@ -42,7 +42,7 @@ defmodule RewardAppWeb.RewardControllerTest do
       )
     end
 
-    @tag login_as: %{name: "juri"}
+    @tag login_as: %{name: "juri"}, attrs: %{}
     test "lists all rewards", %{conn: conn} do
       conn = get(conn, Routes.reward_path(conn, :index))
 
@@ -50,14 +50,14 @@ defmodule RewardAppWeb.RewardControllerTest do
       assert rewards_count() == 1
     end
 
-    @tag login_as: %{name: "juri", role: "admin"}
+    @tag login_as: %{name: "juri", role: "admin"}, attrs: %{}
     test "shows form", %{conn: conn} do
       conn = get(conn, Routes.reward_path(conn, :new))
 
       assert html_response(conn, 200)
     end
 
-    @tag login_as: %{name: "juri", role: "admin"}
+    @tag login_as: %{name: "juri", role: "admin"}, attrs: %{}
     test "redirects to index when data is valid and creates reward",
          %{conn: conn} do
       assert rewards_count() == 1
@@ -66,29 +66,24 @@ defmodule RewardAppWeb.RewardControllerTest do
       assert redirected_to(conn) == Routes.reward_path(conn, :index)
       assert get_flash(conn, :info) == "Reward created successfully."
     end
-  end
 
-  describe "create reward" do
-    setup [:create_user, :create_admin_user]
-
-    test "renders errors when given name of is blank", %{conn: conn, admin_user: admin_user} do
-      conn = Plug.Test.init_test_session(conn, user_id: admin_user.id)
-
-      conn =
+    @tag login_as: %{name: "juri", role: "admin"}, attrs: %{}
+    test "renders errors when given is blank", %{conn: conn} do
+      %{assigns: %{changeset: changeset}} =
+        conn =
         post(conn, Routes.reward_path(conn, :create), reward: Map.put(@valid_attrs, :name, ""))
 
       assert html_response(conn, 200)
       assert get_flash(conn, :error) == "Something went wrong."
-      assert conn.assigns.changeset.errors[:name] == {"can't be blank", [validation: :required]}
+      assert %{name: ["can't be blank"]} == errors_on(changeset)
     end
 
+    @tag login_as: %{name: "juri", role: "admin"}, attrs: %{}
     test "renders errors when given description is blank", %{
-      conn: conn,
-      admin_user: admin_user
+      conn: conn
     } do
-      conn = Plug.Test.init_test_session(conn, user_id: admin_user.id)
-
-      conn =
+      %{assigns: %{changeset: changeset}} =
+        conn =
         post(conn, Routes.reward_path(conn, :create),
           reward: Map.put(@valid_attrs, :description, "")
         )
@@ -96,112 +91,72 @@ defmodule RewardAppWeb.RewardControllerTest do
       assert html_response(conn, 200)
       assert get_flash(conn, :error) == "Something went wrong."
 
-      assert conn.assigns.changeset.errors[:description] ==
-               {"can't be blank", [validation: :required]}
+      assert %{description: ["can't be blank"]} == errors_on(changeset)
     end
 
-    test "renders errors when given price is negative", %{
-      conn: conn,
-      admin_user: admin_user
+    @tag login_as: %{name: "juri", role: "admin"}, attrs: %{}
+    test "renders error when given price is negative", %{
+      conn: conn
     } do
-      conn = Plug.Test.init_test_session(conn, user_id: admin_user.id)
-
-      conn =
+      %{assigns: %{changeset: changeset}} =
+        conn =
         post(conn, Routes.reward_path(conn, :create), reward: Map.put(@valid_attrs, :price, -1))
 
       assert html_response(conn, 200)
       assert get_flash(conn, :error) == "Something went wrong."
 
-      assert conn.assigns.changeset.errors[:price] ==
-               {"Price can't be negative",
-                [
-                  validation: :number,
-                  kind: :greater_than_or_equal_to,
-                  number: 0
-                ]}
-    end
-  end
-
-  describe "edit reward" do
-    setup [:create_user, :create_admin_user, :create_reward]
-
-    test "redirects to home page when signed in but not an admin", %{
-      conn: conn,
-      user: user,
-      reward: reward
-    } do
-      conn = Plug.Test.init_test_session(conn, user_id: user.id)
-      conn = get(conn, Routes.reward_path(conn, :edit, reward))
-
-      assert html_response(conn, 302)
-      assert redirected_to(conn) == Routes.page_path(conn, :index)
-      assert get_flash(conn, :error) == "You must be an admin to access this page."
+      assert %{price: ["Price can't be negative"]} == errors_on(changeset)
     end
 
-    test "shows edit reward form when signed in and an admin", %{
+    @tag login_as: %{name: "juri", role: "admin"}, attrs: %{}
+    test "shows edit reward form", %{
       conn: conn,
-      admin_user: admin_user,
       reward: reward
     } do
-      conn = Plug.Test.init_test_session(conn, user_id: admin_user.id)
       conn = get(conn, Routes.reward_path(conn, :edit, reward))
       assert html_response(conn, 200)
+      assert String.contains?(conn.resp_body, "Edit #{reward.name}")
     end
-  end
 
-  describe "update reward" do
-    setup [:create_user, :create_reward, :create_admin_user]
-
-    test "redirects to home page when signed in but not an admin", %{
+    @tag login_as: %{name: "juri", role: "admin"}, attrs: %{}
+    test "updates reward and redirects to index when data is valid", %{
       conn: conn,
-      user: user,
       reward: reward
     } do
-      conn = Plug.Test.init_test_session(conn, user_id: user.id)
+      assert reward.name == "ticket"
       conn = put(conn, Routes.reward_path(conn, :update, reward), %{"reward" => @valid_attrs})
 
       assert html_response(conn, 302)
-      assert redirected_to(conn) == Routes.page_path(conn, :index)
-      assert get_flash(conn, :error) == "You must be an admin to access this page."
-    end
-
-    test "redirects to index when signed in and an admin and data is valid", %{
-      conn: conn,
-      admin_user: admin_user,
-      reward: reward
-    } do
-      conn = Plug.Test.init_test_session(conn, user_id: admin_user.id)
-      conn = put(conn, Routes.reward_path(conn, :update, reward), %{"reward" => @valid_attrs})
-
       assert redirected_to(conn) == Routes.reward_path(conn, :index)
       assert get_flash(conn, :info) == "Reward updated successfully."
+      updated_reward = Rewards.get_reward!(reward.id)
+      assert updated_reward.id == reward.id
+      assert updated_reward.name == "some name"
     end
 
-    test "renders errors when given name is blank", %{
+    @tag login_as: %{name: "juri", role: "admin"}, attrs: %{}
+    test "update: renders errors when given name is blank", %{
       conn: conn,
-      admin_user: admin_user,
       reward: reward
     } do
-      conn = Plug.Test.init_test_session(conn, user_id: admin_user.id)
-
-      conn =
+      %{assigns: %{changeset: changeset}} =
+        conn =
         put(conn, Routes.reward_path(conn, :update, reward),
           reward: Map.put(@valid_attrs, :name, "")
         )
 
       assert html_response(conn, 200)
       assert get_flash(conn, :error) == "Something went wrong."
-      assert conn.assigns.changeset.errors[:name] == {"can't be blank", [validation: :required]}
+      assert %{name: ["can't be blank"]} == errors_on(changeset)
     end
 
-    test "renders errors when given description is blank", %{
+    @tag login_as: %{name: "juri", role: "admin"}, attrs: %{}
+    test "update: renders errors when given description is blank", %{
       conn: conn,
-      admin_user: admin_user,
       reward: reward
     } do
-      conn = Plug.Test.init_test_session(conn, user_id: admin_user.id)
-
-      conn =
+      %{assigns: %{changeset: changeset}} =
+        conn =
         put(conn, Routes.reward_path(conn, :update, reward),
           reward: Map.put(@valid_attrs, :description, "")
         )
@@ -209,18 +164,16 @@ defmodule RewardAppWeb.RewardControllerTest do
       assert html_response(conn, 200)
       assert get_flash(conn, :error) == "Something went wrong."
 
-      assert conn.assigns.changeset.errors[:description] ==
-               {"can't be blank", [validation: :required]}
+      assert %{description: ["can't be blank"]} == errors_on(changeset)
     end
 
+    @tag login_as: %{name: "juri", role: "admin"}, attrs: %{}
     test "renders errors when given price is negative", %{
       conn: conn,
-      admin_user: admin_user,
       reward: reward
     } do
-      conn = Plug.Test.init_test_session(conn, user_id: admin_user.id)
-
-      conn =
+      %{assigns: %{changeset: changeset}} =
+        conn =
         put(conn, Routes.reward_path(conn, :update, reward),
           reward: Map.put(@valid_attrs, :price, -1)
         )
@@ -228,30 +181,9 @@ defmodule RewardAppWeb.RewardControllerTest do
       assert html_response(conn, 200)
       assert get_flash(conn, :error) == "Something went wrong."
 
-      assert conn.assigns.changeset.errors[:price] ==
-               {"Price can't be negative",
-                [
-                  validation: :number,
-                  kind: :greater_than_or_equal_to,
-                  number: 0
-                ]}
+      assert %{price: ["Price can't be negative"]} == errors_on(changeset)
     end
   end
 
   defp rewards_count, do: Enum.count(Rewards.list_rewards())
-
-  defp create_reward(_) do
-    reward = reward_fixture()
-    %{reward: reward}
-  end
-
-  defp create_user(_) do
-    user = user_fixture()
-    %{user: user}
-  end
-
-  defp create_admin_user(_) do
-    user = user_fixture(%{name: "admin", email: "admin@admin", role: "admin"})
-    %{admin_user: user}
-  end
 end

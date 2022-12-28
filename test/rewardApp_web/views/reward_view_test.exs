@@ -1,18 +1,14 @@
 defmodule RewardAppWeb.RewardViewTest do
   use RewardAppWeb.ConnCase, async: true
   import Phoenix.View
-  import RewardApp.RewardsFixtures
-  import RewardApp.AccountsFixtures
+
   alias RewardAppWeb.RewardView
   alias RewardApp.Rewards
   alias RewardApp.Rewards.Reward
 
-  setup %{conn: conn} do
-    user = user_fixture()
-    conn = assign(conn, :current_user, user)
-    {:ok, conn: conn, current_user: user}
-  end
+  setup [:login]
 
+  @tag login_as: %{name: "juri"}
   test "renders edit.html", %{conn: conn} do
     reward = reward_fixture()
     changeset = Rewards.change_reward(reward)
@@ -29,7 +25,8 @@ defmodule RewardAppWeb.RewardViewTest do
     assert String.contains?(content, reward.description)
   end
 
-  test "renders index.html", %{conn: conn, current_user: current_user} do
+  @tag login_as: %{name: "juri"}
+  test "renders index.html", %{conn: conn, user: user} do
     rewards = [
       reward_fixture(),
       reward_fixture(%{name: "house", description: "big house"})
@@ -39,7 +36,7 @@ defmodule RewardAppWeb.RewardViewTest do
       render_to_string(RewardView, "index.html",
         conn: conn,
         rewards: rewards,
-        current_user: current_user
+        current_user: user
       )
 
     assert String.contains?(content, "Choose a reward")
@@ -50,6 +47,7 @@ defmodule RewardAppWeb.RewardViewTest do
     end
   end
 
+  @tag login_as: %{name: "juri"}
   test "renders new.html", %{conn: conn} do
     changeset = Rewards.change_reward(%Reward{})
 

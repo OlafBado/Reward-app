@@ -103,7 +103,7 @@ defmodule RewardApp.UserRewards do
       "10" -> "October"
       "11" -> "November"
       "12" -> "December"
-      _ -> "Invalid month"
+      _ -> {:error, :invalid_month}
     end
   end
 end

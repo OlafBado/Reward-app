@@ -26,6 +26,7 @@ defmodule RewardAppWeb.ConnCase do
       import RewardApp.PlugsFixtures
       import RewardApp.AccountsFixtures
       import RewardApp.RewardsFixtures
+      import RewardApp.UserRewardsFixtures
 
       alias RewardAppWeb.Router.Helpers, as: Routes
 
@@ -37,5 +38,13 @@ defmodule RewardAppWeb.ConnCase do
   setup tags do
     RewardApp.DataCase.setup_sandbox(tags)
     {:ok, conn: Phoenix.ConnTest.build_conn()}
+  end
+
+  def errors_on(changeset) do
+    Ecto.Changeset.traverse_errors(changeset, fn {message, opts} ->
+      Regex.replace(~r"%{(\w+)}", message, fn _, key ->
+        opts |> Keyword.get(String.to_existing_atom(key), key) |> to_string()
+      end)
+    end)
   end
 end

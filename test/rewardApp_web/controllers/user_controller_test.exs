@@ -1,24 +1,37 @@
 defmodule RewardAppWeb.UserControllerTest do
   use RewardAppWeb.ConnCase, async: true
-  import RewardApp.AccountsFixtures
+
+  alias RewardApp.Accounts
 
   @create_attrs %{name: "some name", email: "some@email", password: "999000999"}
 
-  describe "index" do
-    setup [:create_user]
+  test "requires user authentication on given actions", %{conn: conn} do
+    Enum.each(
+      [
+        get(conn, Routes.user_path(conn, :index)),
+        get(conn, Routes.user_path(conn, :show, 1)),
+        get(conn, Routes.user_path(conn, :edit, 1)),
+        put(conn, Routes.user_path(conn, :update, 1), %{}),
+        delete(conn, Routes.user_path(conn, :delete, 1)),
+        post(conn, Routes.user_path(conn, :send, 1), %{})
+      ],
+      fn conn ->
+        assert html_response(conn, 302)
+        assert redirected_to(conn) == Routes.session_path(conn, :new)
+        assert conn.halted
+      end
+    )
+  end
 
-    test "lists all users when user is signed in", %{conn: conn, user: user} do
-      conn = Plug.Test.init_test_session(conn, user_id: user.id)
+  describe "index" do
+    setup [:login]
+
+    @tag login_as: %{name: "juri"}
+    test "lists all users", %{conn: conn, user: user} do
       conn = get(conn, Routes.user_path(conn, :index))
 
       assert html_response(conn, 200)
-    end
-
-    test "redirects to log in page when not signed in", %{conn: conn} do
-      conn = get(conn, Routes.user_path(conn, :index))
-
-      assert html_response(conn, 302)
-      assert redirected_to(conn) == Routes.session_path(conn, :new)
+      assert String.contains?(conn.resp_body, user.name)
     end
   end
 
@@ -27,6 +40,7 @@ defmodule RewardAppWeb.UserControllerTest do
       conn = get(conn, Routes.user_path(conn, :new))
 
       assert html_response(conn, 200)
+      assert String.contains?(conn.resp_body, "Register")
     end
   end
 
@@ -40,67 +54,54 @@ defmodule RewardAppWeb.UserControllerTest do
       conn = get(conn, Routes.user_path(conn, :show, id))
 
       assert html_response(conn, 200)
+      assert String.contains?(conn.resp_body, @create_attrs.name)
     end
 
     test "renders errors when email is invalid", %{conn: conn} do
-      conn =
+      %{assigns: %{changeset: changeset}} =
+        conn =
         post(conn, Routes.user_path(conn, :create), user: Map.put(@create_attrs, :email, "abc"))
 
       assert html_response(conn, 200)
 
-      assert conn.assigns.changeset.errors[:email] ==
-               {"has invalid format", [validation: :format]}
+      assert %{email: ["has invalid format"]} == errors_on(changeset)
     end
 
     test "renders errors when password is invalid", %{conn: conn} do
-      conn =
+      %{assigns: %{changeset: changeset}} =
+        conn =
         post(conn, Routes.user_path(conn, :create), user: Map.put(@create_attrs, :password, "abc"))
 
       assert html_response(conn, 200)
 
-      assert conn.assigns.changeset.errors[:password] ==
-               {"should be at least %{count} character(s)",
-                [
-                  count: 6,
-                  validation: :length,
-                  kind: :min,
-                  type: :string
-                ]}
+      assert %{password: ["should be at least 6 character(s)"]} == errors_on(changeset)
     end
 
     test "renders errors when name is blank", %{conn: conn} do
-      conn = post(conn, Routes.user_path(conn, :create), user: Map.put(@create_attrs, :name, ""))
+      %{assigns: %{changeset: changeset}} =
+        conn =
+        post(conn, Routes.user_path(conn, :create), user: Map.put(@create_attrs, :name, ""))
+
       assert html_response(conn, 200)
 
-      assert conn.assigns.changeset.errors[:name] ==
-               {"can't be blank",
-                [
-                  validation: :required
-                ]}
+      assert %{name: ["can't be blank"]} == errors_on(changeset)
     end
   end
 
   describe "edit user" do
-    setup [:create_user]
+    setup [:login]
 
-    test "renders form for editing chosen user when logged in", %{conn: conn, user: user} do
-      conn = Plug.Test.init_test_session(conn, user_id: user.id)
+    @tag login_as: %{name: "juri"}
+    test "renders form for editing chosen user", %{conn: conn, user: user} do
       conn = get(conn, Routes.user_path(conn, :edit, user))
 
       assert html_response(conn, 200)
     end
 
-    test "redirects to log in page when not logged in", %{conn: conn, user: user} do
-      conn = get(conn, Routes.user_path(conn, :edit, user))
-
-      assert redirected_to(conn) == Routes.session_path(conn, :new)
-      assert html_response(conn, 302)
-    end
-
-    test "redirects to home page when it's not current user's profile", %{conn: conn, user: user} do
+    @tag login_as: %{name: "juri"}
+    test "redirects to home page when it's not current user's profile", %{conn: conn} do
       user2 = user_fixture(%{name: "abc", email: "aaa@aaa"})
-      conn = Plug.Test.init_test_session(conn, user_id: user2.id)
-      conn = get(conn, Routes.user_path(conn, :edit, user))
+      conn = get(conn, Routes.user_path(conn, :edit, user2))
 
       assert html_response(conn, 302)
       assert redirected_to(conn) == Routes.page_path(conn, :index)
@@ -111,14 +112,13 @@ defmodule RewardAppWeb.UserControllerTest do
   end
 
   describe "update user" do
-    setup [:create_user]
+    setup [:login]
 
+    @tag login_as: %{name: "juri"}
     test "updates user when data is valid and redirects to show updated profile", %{
       conn: conn,
       user: user
     } do
-      conn = Plug.Test.init_test_session(conn, user_id: user.id)
-
       conn =
         put(conn, Routes.user_path(conn, :update, user),
           user: Map.drop(@create_attrs, [:password])
@@ -126,68 +126,48 @@ defmodule RewardAppWeb.UserControllerTest do
 
       assert redirected_to(conn) == Routes.user_path(conn, :show, user)
       assert get_flash(conn, :info) == "Profile updated successfully."
-      conn = get(conn, Routes.user_path(conn, :show, user))
-
-      assert html_response(conn, 200)
     end
 
-    test "redirects to log in page when user is not logged in", %{conn: conn, user: user} do
-      conn = put(conn, Routes.user_path(conn, :update, user), user: user)
-
-      assert html_response(conn, 302)
-      assert redirected_to(conn) == Routes.session_path(conn, :new)
-    end
-
+    @tag login_as: %{name: "juri"}
     test "renders errors when email is invalid", %{conn: conn, user: user} do
-      conn = Plug.Test.init_test_session(conn, user_id: user.id)
-
-      conn =
+      %{assigns: %{changeset: changeset}} =
+        conn =
         put(conn, Routes.user_path(conn, :update, user),
           user: Map.put(@create_attrs, :email, "abc")
         )
 
       assert html_response(conn, 200)
 
-      assert conn.assigns.changeset.errors[:email] ==
-               {"has invalid format", [validation: :format]}
+      assert %{email: ["has invalid format"]} == errors_on(changeset)
     end
 
+    @tag login_as: %{name: "juri"}
     test "renders errors when name is blank", %{conn: conn, user: user} do
-      conn = Plug.Test.init_test_session(conn, user_id: user.id)
-
-      conn =
+      %{assigns: %{changeset: changeset}} =
+        conn =
         put(conn, Routes.user_path(conn, :update, user), user: Map.put(@create_attrs, :name, ""))
 
       assert html_response(conn, 200)
 
-      assert conn.assigns.changeset.errors[:name] ==
-               {"can't be blank",
-                [
-                  validation: :required
-                ]}
+      assert %{name: ["can't be blank"]} == errors_on(changeset)
     end
   end
 
-  describe "delete user" do
-    setup [:create_user]
+  describe "delete user/2" do
+    setup [:login]
 
-    test "redirects to log in page if user is not logged in", %{conn: conn, user: user} do
-      conn = delete(conn, Routes.user_path(conn, :delete, user))
-      assert redirected_to(conn) == Routes.session_path(conn, :new)
-    end
-
-    test "redirects to home page if it's not user's profile", %{conn: conn, user: user} do
+    @tag login_as: %{name: "juri"}
+    test "redirects to home page if it's not user's profile", %{conn: conn} do
       user2 = user_fixture(%{name: "abc", email: "aaa@aaa"})
-      conn = Plug.Test.init_test_session(conn, user_id: user2.id)
-      conn = delete(conn, Routes.user_path(conn, :delete, user))
+      conn = delete(conn, Routes.user_path(conn, :delete, user2))
       assert redirected_to(conn) == Routes.page_path(conn, :index)
 
       assert get_flash(conn, :error) ==
                "You must be the owner of this profile to access this page."
     end
 
-    test "deletes chosen user and redirects to home page", %{conn: conn, user: user} do
-      conn = Plug.Test.init_test_session(conn, user_id: user.id)
+    @tag login_as: %{name: "juri"}
+    test "deletes choosen user and redirects to home page", %{conn: conn, user: user} do
       conn = delete(conn, Routes.user_path(conn, :delete, user))
       assert redirected_to(conn) == Routes.user_path(conn, :index)
 
@@ -195,60 +175,53 @@ defmodule RewardAppWeb.UserControllerTest do
     end
   end
 
-  describe "send" do
-    setup [:create_user]
+  describe "send/2" do
+    setup [:login, :create_user]
 
-    test "redirects to log in page if user is not logged in", %{conn: conn, user: user} do
-      conn = post(conn, Routes.user_path(conn, :send, user))
-      assert redirected_to(conn) == Routes.session_path(conn, :new)
-      assert get_flash(conn, :error) == "You must be logged in to access this page."
-    end
-
+    @tag login_as: %{name: "juri"}, attrs: %{name: "abc", email: "aaa@aaa", total_points: 100}
     test "sends points if sender has enough points", %{
       conn: conn,
-      user: sender
+      user: sender,
+      create_user: receiver
     } do
-      receiver = user_fixture(%{name: "abc", email: "aaa@aaa", total_points: 100})
-
-      conn = Plug.Test.init_test_session(conn, user_id: sender.id)
+      assert receiver.total_points == 50
+      assert sender.total_points == 50
       conn = post(conn, Routes.user_path(conn, :send, receiver), %{"user" => %{"points" => "50"}})
 
       assert redirected_to(conn) == Routes.user_path(conn, :index)
       assert get_flash(conn, :info) == "Points sent successfully."
+      assert Accounts.get_user!(receiver.id).total_points == 100
+      assert Accounts.get_user!(sender.id).total_points == 0
     end
 
+    @tag login_as: %{name: "juri"}, attrs: %{name: "abc", email: "aaa@aaa", total_points: 100}
     test "sends errors if user doesn't have enough points", %{
       conn: conn,
-      user: sender
+      create_user: receiver
     } do
-      receiver = user_fixture(%{name: "abc", email: "aaa@aaa"})
-
-      conn = Plug.Test.init_test_session(conn, user_id: sender.id)
       conn = post(conn, Routes.user_path(conn, :send, receiver), %{"user" => %{"points" => "60"}})
 
       assert redirected_to(conn) == Routes.user_path(conn, :index)
       assert get_flash(conn, :error) == "You do not have enough points to send."
     end
 
+    @tag login_as: %{name: "juri"}, attrs: %{name: "abc", email: "aaa@aaa", total_points: 100}
     test "sends errors if user sends 0 points", %{
       conn: conn,
-      user: sender
+      create_user: receiver
     } do
-      receiver = user_fixture(%{name: "abc", email: "aaa@aaa", total_points: 100})
-
-      conn = Plug.Test.init_test_session(conn, user_id: sender.id)
       conn = post(conn, Routes.user_path(conn, :send, receiver), %{"user" => %{"points" => "0"}})
 
       assert redirected_to(conn) == Routes.user_path(conn, :index)
       assert get_flash(conn, :error) == "You must send at least 1 point."
     end
 
+    @tag login_as: %{name: "juri"}, attrs: %{name: "abc", email: "aaa@aaa", total_points: 100}
     test "sends errors if user sends negative points", %{
       conn: conn,
-      user: sender
+      user: sender,
+      create_user: receiver
     } do
-      receiver = user_fixture(%{name: "abc", email: "aaa@aaa", total_points: 100})
-
       conn = Plug.Test.init_test_session(conn, user_id: sender.id)
       conn = post(conn, Routes.user_path(conn, :send, receiver), %{"user" => %{"points" => "-1"}})
 
@@ -256,22 +229,17 @@ defmodule RewardAppWeb.UserControllerTest do
       assert get_flash(conn, :error) == "You cannot send negative points."
     end
 
+    @tag login_as: %{name: "juri"}, attrs: %{name: "abc", email: "aaa@aaa", total_points: 100}
     test "sends errors if user sends empty form", %{
       conn: conn,
-      user: sender
+      user: sender,
+      create_user: receiver
     } do
-      receiver = user_fixture(%{name: "abc", email: "aaa@aaa", total_points: 100})
-
       conn = Plug.Test.init_test_session(conn, user_id: sender.id)
       conn = post(conn, Routes.user_path(conn, :send, receiver), %{"user" => %{"points" => ""}})
 
       assert redirected_to(conn) == Routes.user_path(conn, :index)
       assert get_flash(conn, :error) == "You must enter a number of points to send."
     end
-  end
-
-  defp create_user(_) do
-    user = user_fixture()
-    %{user: user}
   end
 end

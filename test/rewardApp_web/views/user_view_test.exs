@@ -1,35 +1,33 @@
 defmodule RewardAppWeb.UserViewTest do
   use RewardAppWeb.ConnCase, async: true
   import Phoenix.View
-  import RewardApp.AccountsFixtures
+
   alias RewardAppWeb.UserView
   alias RewardApp.Accounts.User
   alias RewardApp.Accounts
 
-  setup %{conn: conn} do
-    user = user_fixture(%{email: "main@main", name: "main"})
-    conn = assign(conn, :current_user, user)
-    {:ok, conn: conn, current_user: user}
-  end
+  setup [:login]
 
-  test "renders edit.html", %{conn: conn, current_user: current_user} do
-    changeset = Accounts.change_user(current_user)
+  @tag login_as: %{name: "juri"}
+  test "renders edit.html", %{conn: conn, user: user} do
+    changeset = Accounts.change_user(user)
 
     content =
       render_to_string(
         UserView,
         "edit.html",
         conn: conn,
-        user: current_user,
+        user: user,
         changeset: changeset,
-        current_user: current_user
+        current_user: user
       )
 
     assert String.contains?(content, "Edit profile")
-    assert String.contains?(content, current_user.name)
-    assert String.contains?(content, current_user.email)
+    assert String.contains?(content, user.name)
+    assert String.contains?(content, user.email)
   end
 
+  @tag login_as: %{name: "juri"}
   test "renders form.html", %{conn: conn} do
     changeset = Accounts.change_registration(%User{}, %{})
 
@@ -45,7 +43,8 @@ defmodule RewardAppWeb.UserViewTest do
     assert String.contains?(content, "Register")
   end
 
-  test "renders index.html", %{conn: conn, current_user: current_user} do
+  @tag login_as: %{name: "juri"}
+  test "renders index.html", %{conn: conn, user: user} do
     users = [user_fixture(%{email: "abc@abc"}), user_fixture(%{email: "123@123"})]
 
     content =
@@ -54,7 +53,7 @@ defmodule RewardAppWeb.UserViewTest do
         "index.html",
         conn: conn,
         users: users,
-        current_user: current_user
+        current_user: user
       )
 
     assert String.contains?(content, "Users")
@@ -63,9 +62,10 @@ defmodule RewardAppWeb.UserViewTest do
       assert String.contains?(content, user.name)
     end
 
-    refute String.contains?(content, current_user.name)
+    refute String.contains?(content, user.name)
   end
 
+  @tag login_as: %{name: "juri"}
   test "renders new.html", %{conn: conn} do
     changeset = Accounts.change_registration(%User{}, %{})
 
@@ -80,17 +80,18 @@ defmodule RewardAppWeb.UserViewTest do
     assert String.contains?(content, "Register")
   end
 
-  test "renders show.html", %{conn: conn, current_user: current_user} do
+  @tag login_as: %{name: "juri"}
+  test "renders show.html", %{conn: conn, user: user} do
     content =
       render_to_string(
         UserView,
         "show.html",
         conn: conn,
-        user: current_user,
-        current_user: current_user
+        user: user,
+        current_user: user
       )
 
-    assert String.contains?(content, current_user.name)
-    assert String.contains?(content, current_user.email)
+    assert String.contains?(content, user.name)
+    assert String.contains?(content, user.email)
   end
 end

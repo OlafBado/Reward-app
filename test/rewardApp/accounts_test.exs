@@ -1,8 +1,6 @@
 defmodule RewardApp.AccountsTest do
   use RewardApp.DataCase, async: true
 
-  import RewardApp.AccountsFixtures
-
   alias RewardApp.Accounts
   alias RewardApp.Accounts.User
 
