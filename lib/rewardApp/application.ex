@@ -13,7 +13,6 @@ defmodule RewardApp.Application do
       {Phoenix.PubSub, name: RewardApp.PubSub},
       RewardAppWeb.Endpoint,
       RewardApp.Scheduler
-      # RewardApp.Tasks.UpdateDatabase
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

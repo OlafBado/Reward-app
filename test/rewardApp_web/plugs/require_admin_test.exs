@@ -4,14 +4,7 @@ defmodule RewardAppWeb.RequireAdminTest do
   import RewardApp.AccountsFixtures
   alias RewardAppWeb.RequireAdmin
 
-  setup %{conn: conn} do
-    conn =
-      conn
-      |> bypass_through(RewardAppWeb.Router, :browser)
-      |> get("/")
-
-    {:ok, %{conn: conn}}
-  end
+  setup [:bypass]
 
   test "halts connection when current user is not an admin", %{conn: conn} do
     conn =

@@ -23,6 +23,9 @@ defmodule RewardAppWeb.ConnCase do
       import Plug.Conn
       import Phoenix.ConnTest
       import RewardAppWeb.ConnCase
+      import RewardApp.PlugsFixtures
+      import RewardApp.AccountsFixtures
+      import RewardApp.RewardsFixtures
 
       alias RewardAppWeb.Router.Helpers, as: Routes
 

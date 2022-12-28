@@ -2,17 +2,9 @@ defmodule RewardAppWeb.AuthTest do
   use RewardAppWeb.ConnCase, async: true
 
   import RewardApp.AccountsFixtures
-
   alias RewardAppWeb.Auth
 
-  setup %{conn: conn} do
-    conn =
-      conn
-      |> bypass_through(RewardAppWeb.Router, :browser)
-      |> get("/")
-
-    {:ok, %{conn: conn}}
-  end
+  setup [:bypass]
 
   test "login puts user in the session", %{conn: conn} do
     conn =

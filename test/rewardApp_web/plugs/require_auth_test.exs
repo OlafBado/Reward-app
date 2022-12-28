@@ -2,17 +2,9 @@ defmodule RewardAppWeb.RequireAuthTest do
   use RewardAppWeb.ConnCase, async: true
 
   import RewardApp.AccountsFixtures
-
   alias RewardAppWeb.RequireAuth
 
-  setup %{conn: conn} do
-    conn =
-      conn
-      |> bypass_through(RewardAppWeb.Router, :browser)
-      |> get("/")
-
-    {:ok, %{conn: conn}}
-  end
+  setup [:bypass]
 
   test "halts connection when no current_user exists", %{conn: conn} do
     conn = RequireAuth.call(conn, %{})

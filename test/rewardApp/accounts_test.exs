@@ -6,154 +6,218 @@ defmodule RewardApp.AccountsTest do
   alias RewardApp.Accounts
   alias RewardApp.Accounts.User
 
-  @invalid_attrs %{name: nil, role: nil, total_points: nil}
-  @valid_attrs %{name: "some updated name", role: "some updated role", email: "12@12"}
+  @invalid_register_attrs %{name: nil, email: nil, password: nil}
+  @register_attrs %{name: "abc", email: "abc@abc", password: "123123123"}
+
   @email "12@12"
   @password "123123123"
 
-  describe "users" do
-    test "list_users/0 returns all users" do
+  describe "register_user/1" do
+    test "with valid data inserts user" do
+      assert {:ok, %User{id: id} = user} = Accounts.register_user(@register_attrs)
+      assert user.name == "abc"
+      assert user.email == "abc@abc"
+      assert [%User{id: ^id}] = Accounts.list_users()
+    end
+
+    test "with invalid data does not insert user" do
+      assert {:error, %Ecto.Changeset{}} =
+               Accounts.register_user(Map.put(@register_attrs, :email, nil))
+
+      assert [] = Accounts.list_users()
+    end
+
+    test "requires password to be at least 6 chars long" do
+      assert {:error, changeset} =
+               Accounts.register_user(Map.put(@register_attrs, :password, "123"))
+
+      assert %{password: ["should be at least 6 character(s)"]} = errors_on(changeset)
+    end
+
+    test "does not accept same emails" do
+      assert {:ok, %User{id: id}} = Accounts.register_user(@register_attrs)
+      assert {:error, changeset} = Accounts.register_user(@register_attrs)
+
+      assert %{email: ["has already been taken"]} = errors_on(changeset)
+      assert [%User{id: ^id}] = Accounts.list_users()
+    end
+  end
+
+  describe "list_users/0" do
+    test "returns all users" do
       user_fixture()
       assert length(Accounts.list_users()) == 1
     end
+  end
 
-    test "get_user!/1 returns the user with given id" do
+  describe "get_user!/1" do
+    test "returns the user with given id" do
       user = user_fixture()
       assert Accounts.get_user!(user.id).id == user.id
     end
 
-    test "create_user/1 with valid data creates a user" do
-      assert {:ok, %User{} = user} = Accounts.create_user(@valid_attrs)
-      assert user.name == "some updated name"
-      assert user.role == "some updated role"
-      assert user.email == "12@12"
+    test "raises if user does not exist" do
+      assert_raise Ecto.NoResultsError, fn ->
+        Accounts.get_user!(123)
+      end
+    end
+  end
+
+  describe "create_user/1" do
+    test "with valid data creates a user" do
+      assert {:ok, %User{} = user} = Accounts.create_user(@register_attrs)
+      assert user.name == "abc"
+      assert user.email == "abc@abc"
       assert user.total_points == 50
     end
 
-    test "create_user/1 with invalid data returns error changeset" do
-      assert {:error, %Ecto.Changeset{}} = Accounts.create_user(@invalid_attrs)
+    test "with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} =
+               Accounts.create_user(Map.put(@register_attrs, :name, nil))
+    end
+  end
+
+  describe "update_user/2" do
+    setup do
+      {:ok, user: user_fixture()}
     end
 
-    test "update_user/2 with valid data updates the user" do
-      user = user_fixture()
-
-      assert {:ok, %User{} = user} = Accounts.update_user(user, @valid_attrs)
-      assert user.name == "some updated name"
-      assert user.role == "some updated role"
-      assert user.email == "12@12"
+    test "with valid data updates the user", %{user: user} do
+      assert {:ok, user} = Accounts.update_user(user, %{name: "qwerty"})
+      assert user.name == "qwerty"
+      assert user.email == "regular@regular"
       assert user.total_points == 50
     end
 
-    test "update_user/2 with invalid data returns error changeset" do
-      user = user_fixture()
-      assert {:error, %Ecto.Changeset{}} = Accounts.update_user(user, @invalid_attrs)
+    test "returns error with invalid data", %{user: user} do
+      assert {:error, changeset} = Accounts.update_user(user, %{name: nil, email: nil})
+      assert %{email: ["can't be blank"], name: ["can't be blank"]} = errors_on(changeset)
     end
 
-    test "delete_user/1 deletes the user" do
-      user = user_fixture()
-      assert {:ok, %User{}} = Accounts.delete_user(user)
-      assert_raise Ecto.NoResultsError, fn -> Accounts.get_user!(user.id) end
+    test "returns error if email is already taken", %{user: user} do
+      user2 = user_fixture(%{email: "abc@abc"})
+      assert {:error, changeset} = Accounts.update_user(user, %{email: user2.email})
+      assert %{email: ["has already been taken"]} = errors_on(changeset)
     end
 
-    test "change_user/1 returns a user changeset" do
-      user = user_fixture()
-      assert %Ecto.Changeset{} = Accounts.change_user(user)
-    end
-
-    test "update_user/2 with total_points updates user points" do
-      user = user_fixture()
+    test "with total_points updates user points", %{user: user} do
       assert {:ok, %User{} = user} = Accounts.update_user(user, %{"total_points" => "100"})
       assert user.total_points == 100
     end
 
-    test "change_registration/2 returns a user changeset" do
+    test "returns error if total_points value is blank", %{user: user} do
+      assert {:error, changeset} = Accounts.update_user(user, %{"total_points" => ""})
+      assert %{total_points: ["can't be blank"]} = errors_on(changeset)
+    end
+
+    test "returns error if total_points value is negative", %{user: user} do
+      assert {:error, changeset} = Accounts.update_user(user, %{"total_points" => "-1"})
+      assert %{total_points: ["must be greater than or equal to 0"]} = errors_on(changeset)
+    end
+  end
+
+  describe "delete_user/1" do
+    test "deletes the user" do
       user = user_fixture()
-      assert %Ecto.Changeset{} = Accounts.change_registration(user, @valid_attrs)
+      assert length(Accounts.list_users()) == 1
+      assert {:ok, %User{}} = Accounts.delete_user(user)
+      assert_raise Ecto.NoResultsError, fn -> Accounts.get_user!(user.id) end
+      assert length(Accounts.list_users()) == 0
     end
+  end
 
-    test "change_registration/2 returns an error if password is too short" do
+  describe "change_user/1" do
+    test "returns a user changeset" do
       user = user_fixture()
-      result = Accounts.change_registration(user, Map.put(@valid_attrs, :password, "123"))
-      {error, _rest} = result.errors[:password]
-      assert %Ecto.Changeset{} = result
-      assert error == "should be at least %{count} character(s)"
+      assert %Ecto.Changeset{} = Accounts.change_user(user)
+    end
+  end
+
+  describe "change_registration/2" do
+    test "returns a user changeset" do
+      assert %Ecto.Changeset{} = Accounts.change_registration(%User{}, @register_attrs)
     end
 
-    test "register_user/1 inserts user to db with valid data" do
-      result = Accounts.register_user(Map.put(@valid_attrs, :password, "999000999"))
+    test "returns error with invalid data" do
+      changeset = Accounts.change_registration(%User{}, @invalid_register_attrs)
 
-      assert {:ok, %User{} = user} = result
-      assert user.name == "some updated name"
-      assert user.role == "some updated role"
-      assert user.email == "12@12"
-      assert user.password == "999000999"
-      assert user.password_hash != nil
+      assert %{email: ["can't be blank"], name: ["can't be blank"], password: ["can't be blank"]} =
+               errors_on(changeset)
     end
 
-    test "authenticate_by_email_and_password/2 returns ok and user if password is correct" do
-      {_, user} = Accounts.register_user(Map.put(@valid_attrs, :password, "999000999"))
+    test "returns error if password is too short" do
+      changeset =
+        Accounts.change_registration(%User{}, Map.put(@register_attrs, :password, "123"))
 
-      assert {:ok, %User{}} = Accounts.authenticate_by_email_and_password(user.email, "999000999")
+      assert %{password: ["should be at least 6 character(s)"]} = errors_on(changeset)
+    end
+  end
+
+  describe "authenticate_by_email_and_password/2" do
+    setup [:register_user_fixture]
+
+    @tag data: %{password: @password}
+    test "returns user if password is correct", %{user: user} do
+      assert {:ok, auth_user} = Accounts.authenticate_by_email_and_password(user.email, @password)
+      assert auth_user.id == user.id
     end
 
-    test "authenticate_by_email_and_password/2 returns error when password is wrong" do
-      {_, _user} = Accounts.register_user(Map.put(@valid_attrs, :password, "999000999"))
-
-      assert {:error, :unauthorized} = Accounts.authenticate_by_email_and_password(@email, "123")
+    @tag data: %{password: @password}
+    test "returns error if password is wrong", %{user: user} do
+      assert {:error, :unauthorized} =
+               Accounts.authenticate_by_email_and_password(user.email, "123")
     end
 
-    test "authenticate_by_email_and_password/2 returns error when user not found" do
-      assert {:error, :not_found} = Accounts.authenticate_by_email_and_password(@email, @password)
+    @tag data: %{password: @password}
+    test "returns error if user is not found" do
+      assert {:error, :not_found} =
+               Accounts.authenticate_by_email_and_password("notfound@notfound", @password)
+    end
+  end
+
+  describe "validate_points/1" do
+    test "returns ok when points are valid" do
+      assert {:ok, "2"} = Accounts.validate_points("2")
     end
 
-    test "validate_points/1 error when points are empty" do
+    test "returns error when points are empty" do
       assert {:error, :empty_points} = Accounts.validate_points("")
     end
 
-    test "validate_points/1 error when points are negative" do
+    test "returns error when points are negative" do
       assert {:error, :negative_points} = Accounts.validate_points("-2")
     end
 
-    test "validate_points/1 error when points are equal to 0" do
+    test "returns error when points are equal to 0" do
       assert {:error, :zero_points} = Accounts.validate_points("0")
     end
+  end
 
-    test "send_points/3 returns ok if sender has enough points and decrement sender's points" do
-      {_, sender} = Accounts.register_user(Map.put(@valid_attrs, :password, "999000999"))
+  describe "send_points/3" do
+    setup [:register_user_fixture]
 
-      {_, receiver} =
-        Accounts.register_user(
-          Map.replace(Map.put(@valid_attrs, :password, "999000888"), :email, "acd@acd")
-        )
+    test "returns ok if sender has enough points and decrement sender's points", %{user: receiver} do
+      {_, [{_, sender}]} = register_user_fixture(%{email: "abc@abc"})
 
-      assert {:ok, user} = Accounts.send_points(sender, receiver.id, "50")
-      assert user.total_points == 0
+      assert {:ok, sender} = Accounts.send_points(sender, receiver.id, "50")
+      assert sender.total_points == 0
     end
 
-    test "send_points/3 returns error if sender doesnt' have enough points" do
-      {_, sender} = Accounts.register_user(Map.put(@valid_attrs, :password, "999000999"))
+    test "returns error if sender doesnt' have enough points", %{user: receiver} do
+      {_, [{_, sender}]} = register_user_fixture(%{email: "abc@abc"})
 
-      {_, receiver} =
-        Accounts.register_user(
-          Map.replace(Map.put(@valid_attrs, :password, "999000888"), :email, "acd@acd")
-        )
-
-      assert {:error, %Ecto.Changeset{errors: [total_points: {error, _rest}]}} =
-               Accounts.send_points(sender, receiver.id, "150")
-
-      assert error == "must be greater than or equal to %{number}"
+      assert {:error, changeset} = Accounts.send_points(sender, receiver.id, "150")
+      assert %{total_points: ["must be greater than or equal to 0"]} = errors_on(changeset)
     end
+  end
 
-    test "set_points_monthly updates users points" do
-      {_, user1} = Accounts.register_user(Map.put(@valid_attrs, :password, "999000999"))
+  describe "set_points_monthly/0" do
+    test "updates users points" do
+      {_, [{_, user1}]} = register_user_fixture(%{email: "abc@abc"})
+      {_, [{_, user2}]} = register_user_fixture(%{email: "123@123"})
 
-      {_, user2} =
-        Accounts.register_user(
-          Map.replace(Map.put(@valid_attrs, :password, "999000888"), :email, "acd@acd")
-        )
-
-      {:ok, %User{} = updated_user1} = Accounts.update_user(user1, %{"total_points" => "100"})
-      {:ok, %User{} = updated_user2} = Accounts.update_user(user2, %{"total_points" => "90"})
+      {:ok, updated_user1} = Accounts.update_user(user1, %{"total_points" => "100"})
+      {:ok, updated_user2} = Accounts.update_user(user2, %{"total_points" => "90"})
 
       assert updated_user1.total_points == 100
       assert updated_user2.total_points == 90

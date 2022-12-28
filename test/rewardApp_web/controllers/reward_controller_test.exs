@@ -1,10 +1,6 @@
 defmodule RewardAppWeb.RewardControllerTest do
   use RewardAppWeb.ConnCase, async: true
 
-  import RewardApp.RewardsFixtures
-  import RewardApp.AccountsFixtures
-  import Plug.Conn
-
   alias RewardApp.Rewards
 
   @valid_attrs %{name: "some name", description: "some description", price: 100}
@@ -27,14 +23,7 @@ defmodule RewardAppWeb.RewardControllerTest do
   end
 
   describe "with a logged in user" do
-    setup [:create_reward]
-
-    setup %{conn: conn, login_as: data} do
-      user = user_fixture(data)
-      conn = assign(conn, :current_user, user)
-
-      {:ok, conn: conn, user: user}
-    end
+    setup [:create_reward, :login]
 
     @tag login_as: %{name: "juri"}
     test "requires admin role on given actions even if logged in", %{conn: conn} do
