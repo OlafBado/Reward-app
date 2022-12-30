@@ -57,10 +57,10 @@ defmodule RewardApp.UserRewards do
   end
 
   def create_query({start_date, end_date}) do
-    from u in RewardApp.Accounts.User,
-      left_join: ur in RewardApp.UserRewards.UserReward,
+    from u in Accounts.User,
+      left_join: ur in UserReward,
       on: ur.user_id == u.id,
-      left_join: r in RewardApp.Rewards.Reward,
+      left_join: r in Rewards.Reward,
       on:
         r.id == ur.reward_id and
           fragment("? BETWEEN ? AND ?", ur.inserted_at, ^start_date, ^end_date),
