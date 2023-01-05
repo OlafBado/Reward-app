@@ -110,7 +110,7 @@ defmodule RewardApp.AccountsTest do
 
     test "returns error if total_points value is negative", %{user: user} do
       assert {:error, changeset} = Accounts.update_user(user, %{"total_points" => "-1"})
-      assert %{total_points: ["must be greater than or equal to 0"]} = errors_on(changeset)
+      assert %{total_points: ["can't be negative"]} = errors_on(changeset)
     end
   end
 
@@ -173,24 +173,6 @@ defmodule RewardApp.AccountsTest do
     end
   end
 
-  describe "validate_points/1" do
-    test "returns ok when points are valid" do
-      assert {:ok, "2"} = Accounts.validate_points("2")
-    end
-
-    test "returns error when points are empty" do
-      assert {:error, :empty_points} = Accounts.validate_points("")
-    end
-
-    test "returns error when points are negative" do
-      assert {:error, :negative_points} = Accounts.validate_points("-2")
-    end
-
-    test "returns error when points are equal to 0" do
-      assert {:error, :zero_points} = Accounts.validate_points("0")
-    end
-  end
-
   describe "send_points/3" do
     setup [:register_user_fixture]
 
@@ -204,8 +186,8 @@ defmodule RewardApp.AccountsTest do
     test "returns error if sender doesnt' have enough points", %{user: receiver} do
       {_, [{_, sender}]} = register_user_fixture(%{email: "abc@abc"})
 
-      assert {:error, changeset} = Accounts.send_points(sender, receiver.id, "150")
-      assert %{total_points: ["must be greater than or equal to 0"]} = errors_on(changeset)
+      assert {:error, "You don't have enough points"} =
+               Accounts.send_points(sender, receiver.id, "150")
     end
   end
 

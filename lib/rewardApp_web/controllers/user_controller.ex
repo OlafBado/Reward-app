@@ -60,7 +60,6 @@ defmodule RewardAppWeb.UserController do
 
   def update(conn, %{"id" => id, "user" => user_params}) do
     user = Accounts.get_user!(id)
-    IO.inspect(user_params)
 
     case Accounts.update_user(user, user_params) do
       {:ok, updated_user} ->
@@ -85,33 +84,15 @@ defmodule RewardAppWeb.UserController do
   end
 
   def send(conn, %{"id" => receiver_id, "user" => %{"points" => points}}) do
-    case Accounts.validate_points(points) do
-      {:ok, points} ->
-        case Accounts.send_points(conn.assigns.current_user, receiver_id, points) do
-          {:ok, _user} ->
-            conn
-            |> put_flash(:info, "Points sent successfully.")
-            |> redirect(to: Routes.user_path(conn, :index))
-
-          {:error, _changeset} ->
-            conn
-            |> put_flash(:error, "You do not have enough points to send.")
-            |> redirect(to: Routes.user_path(conn, :index))
-        end
-
-      {:error, :zero_points} ->
+    case Accounts.send_points(conn.assigns.current_user, receiver_id, points) do
+      {:ok, _user} ->
         conn
-        |> put_flash(:error, "You must send at least 1 point.")
+        |> put_flash(:info, "Points sent successfully.")
         |> redirect(to: Routes.user_path(conn, :index))
 
-      {:error, :negative_points} ->
+      {:error, reason} ->
         conn
-        |> put_flash(:error, "You cannot send negative points.")
-        |> redirect(to: Routes.user_path(conn, :index))
-
-      {:error, :empty_points} ->
-        conn
-        |> put_flash(:error, "You must enter a number of points to send.")
+        |> put_flash(:error, reason)
         |> redirect(to: Routes.user_path(conn, :index))
     end
   end

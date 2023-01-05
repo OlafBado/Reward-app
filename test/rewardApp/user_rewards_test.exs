@@ -57,7 +57,7 @@ defmodule RewardApp.UserRewardsTest do
 
       assert {:error, changeset} = user |> UserRewards.create_user_reward(reward_id)
 
-      assert %{total_points: ["must be greater than or equal to 0"]} == errors_on(changeset)
+      assert %{total_points: ["You don't have enough points"]} == errors_on(changeset)
     end
   end
 
@@ -91,16 +91,6 @@ defmodule RewardApp.UserRewardsTest do
       assert %Ecto.Query{} = UserRewards.create_query({start_date, end_date})
     end
   end
-
-  # describe "check_for_nil/1" do
-  #   test "check_for_nil/1 returns true if nested map contains nil" do
-  #     assert UserRewards.check_for_nil([%{reward: nil}])
-  #   end
-
-  #   test "check_for_nil/1 returns false if nested map doesn't contain nil" do
-  #     refute UserRewards.check_for_nil([%{reward: "ticket"}])
-  #   end
-  # end
 
   describe "group_list/1" do
     test "group_list/1 returns a grouped list" do

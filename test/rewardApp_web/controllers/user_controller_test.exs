@@ -202,7 +202,7 @@ defmodule RewardAppWeb.UserControllerTest do
       conn = post(conn, Routes.user_path(conn, :send, receiver), %{"user" => %{"points" => "60"}})
 
       assert redirected_to(conn) == Routes.user_path(conn, :index)
-      assert get_flash(conn, :error) == "You do not have enough points to send."
+      assert get_flash(conn, :error) == "You don't have enough points"
     end
 
     @tag login_as: %{name: "juri"}, attrs: %{name: "abc", email: "aaa@aaa", total_points: 100}
@@ -213,7 +213,7 @@ defmodule RewardAppWeb.UserControllerTest do
       conn = post(conn, Routes.user_path(conn, :send, receiver), %{"user" => %{"points" => "0"}})
 
       assert redirected_to(conn) == Routes.user_path(conn, :index)
-      assert get_flash(conn, :error) == "You must send at least 1 point."
+      assert get_flash(conn, :error) == "must be greater than 0"
     end
 
     @tag login_as: %{name: "juri"}, attrs: %{name: "abc", email: "aaa@aaa", total_points: 100}
@@ -226,7 +226,7 @@ defmodule RewardAppWeb.UserControllerTest do
       conn = post(conn, Routes.user_path(conn, :send, receiver), %{"user" => %{"points" => "-1"}})
 
       assert redirected_to(conn) == Routes.user_path(conn, :index)
-      assert get_flash(conn, :error) == "You cannot send negative points."
+      assert get_flash(conn, :error) == "can't be negative"
     end
 
     @tag login_as: %{name: "juri"}, attrs: %{name: "abc", email: "aaa@aaa", total_points: 100}
@@ -239,7 +239,7 @@ defmodule RewardAppWeb.UserControllerTest do
       conn = post(conn, Routes.user_path(conn, :send, receiver), %{"user" => %{"points" => ""}})
 
       assert redirected_to(conn) == Routes.user_path(conn, :index)
-      assert get_flash(conn, :error) == "You must enter a number of points to send."
+      assert get_flash(conn, :error) == "can't be blank"
     end
   end
 end

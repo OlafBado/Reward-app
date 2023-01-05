@@ -187,33 +187,25 @@ defmodule RewardApp.Accounts do
     end
   end
 
-  def validate_points(points) do
-    cond do
-      points == "" ->
-        {:error, :empty_points}
-
-      points < "0" ->
-        {:error, :negative_points}
-
-      points == "0" ->
-        {:error, :zero_points}
-
-      true ->
-        {:ok, points}
-    end
-  end
-
   def send_points(sender, receiver_id, points) do
-    case update_user(sender, %{"total_points" => sender.total_points - String.to_integer(points)}) do
-      {:ok, user} ->
-        update_user(get_user!(receiver_id), %{
-          "total_points" => get_user!(receiver_id).total_points + String.to_integer(points)
-        })
+    case User.user_points_changeset(%User{}, %{"total_points" => points}) do
+      %Ecto.Changeset{valid?: true} ->
+        case update_user(sender, %{
+               "total_points" => sender.total_points - String.to_integer(points)
+             }) do
+          {:ok, user} ->
+            update_user(get_user!(receiver_id), %{
+              "total_points" => get_user!(receiver_id).total_points + String.to_integer(points)
+            })
 
-        {:ok, user}
+            {:ok, user}
 
-      {:error, changeset} ->
-        {:error, changeset}
+          {:error, %Ecto.Changeset{valid?: false, errors: [{_, {reason, _}}]}} ->
+            {:error, reason}
+        end
+
+      %Ecto.Changeset{valid?: false, errors: [{_, {reason, _}}]} ->
+        {:error, reason}
     end
   end
 

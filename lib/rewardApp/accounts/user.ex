@@ -49,14 +49,31 @@ defmodule RewardApp.Accounts.User do
     |> cast(points, [:total_points, :role])
     |> validate_required([:total_points])
     |> validate_points(points)
-    |> validate_number(:total_points, greater_than_or_equal_to: 0)
   end
 
-  defp validate_points(changeset, %{"total_points" => points}) do
-    if points == "" do
-      add_error(changeset, :total_points, "can't be blank")
-    else
-      changeset
+  def validate_points(changeset, %{"total_points" => points}) when is_integer(points) do
+    cond do
+      points < 0 ->
+        add_error(changeset, :total_points, "You don't have enough points")
+
+      true ->
+        changeset
+    end
+  end
+
+  def validate_points(changeset, %{"total_points" => points}) when is_binary(points) do
+    cond do
+      points == "" ->
+        add_error(changeset, :total_points, "can't be blank")
+
+      points < "0" ->
+        add_error(changeset, :total_points, "can't be negative")
+
+      points == "0" ->
+        add_error(changeset, :total_points, "must be greater than 0")
+
+      true ->
+        changeset
     end
   end
 end
