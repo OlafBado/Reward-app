@@ -67,26 +67,32 @@ defmodule RewardApp.UserRewards do
       select: %{name: u.name, reward: r.name}
   end
 
-  def check_for_nil(list) do
-    Enum.any?(list, fn %{reward: value} -> value == nil end)
-  end
-
   def group_list(list) do
     list
     |> Enum.group_by(fn %{name: name} -> name end)
     |> Enum.map(fn {name, values} ->
-      case check_for_nil(values) do
-        true -> %{name: name, reward: []}
-        _ -> %{name: name, reward: Enum.map(values, fn %{reward: reward} -> reward end)}
-      end
+      %{
+        name: name,
+        reward: Enum.map(values, fn %{reward: reward} -> reward end)
+      }
     end)
+  end
+
+  def filter_nil(list) do
+    for %{name: name, reward: reward} <- list do
+      %{
+        name: name,
+        reward: Enum.filter(reward, fn reward -> reward != nil end)
+      }
+    end
   end
 
   def generate_report(%{"report" => %{"month" => month, "year" => year}}) do
     create_date_range(String.to_integer(year), String.to_integer(month))
     |> create_query
     |> Repo.all()
-    |> group_list
+    |> group_list()
+    |> filter_nil()
   end
 
   def convert_string_to_month(string) do

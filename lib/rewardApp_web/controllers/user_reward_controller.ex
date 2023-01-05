@@ -40,6 +40,7 @@ defmodule RewardAppWeb.UserRewardController do
 
   def show(conn, %{"report" => %{"month" => month, "year" => year}} = params) do
     users = UserRewards.generate_report(params)
+    IO.inspect(users)
 
     render(conn, "show.html",
       users: users,

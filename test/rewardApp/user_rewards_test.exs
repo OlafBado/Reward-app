@@ -92,15 +92,15 @@ defmodule RewardApp.UserRewardsTest do
     end
   end
 
-  describe "check_for_nil/1" do
-    test "check_for_nil/1 returns true if nested map contains nil" do
-      assert UserRewards.check_for_nil([%{reward: nil}])
-    end
+  # describe "check_for_nil/1" do
+  #   test "check_for_nil/1 returns true if nested map contains nil" do
+  #     assert UserRewards.check_for_nil([%{reward: nil}])
+  #   end
 
-    test "check_for_nil/1 returns false if nested map doesn't contain nil" do
-      refute UserRewards.check_for_nil([%{reward: "ticket"}])
-    end
-  end
+  #   test "check_for_nil/1 returns false if nested map doesn't contain nil" do
+  #     refute UserRewards.check_for_nil([%{reward: "ticket"}])
+  #   end
+  # end
 
   describe "group_list/1" do
     test "group_list/1 returns a grouped list" do
@@ -111,9 +111,12 @@ defmodule RewardApp.UserRewardsTest do
   describe "generate_report/1" do
     test "returns grouped list" do
       user_reward_fixture()
+      {{year, month, _}, _} = :calendar.local_time()
 
       assert [%{name: name, reward: [reward]}] =
-               UserRewards.generate_report(%{"report" => %{"month" => "12", "year" => "2022"}})
+               UserRewards.generate_report(%{
+                 "report" => %{"month" => to_string(month), "year" => to_string(year)}
+               })
 
       assert name == "regular"
       assert reward == "ticket"
